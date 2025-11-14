@@ -1,9 +1,13 @@
 using glubhub.Components;
+using Microsoft.EntityFrameworkCore;
+using System.Runtime;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents();
+builder.Services.AddDbContext<glubhub.Data.UserDbContext>(option => 
+option.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
 var app = builder.Build();
 

@@ -16,11 +16,8 @@ namespace glubhub.Models
         [Required]
         public DateTime Creationdate { get; } 
         = DateTime.Now;
-        [Required]
         public int Followers { get; set; }
-        [Required]
         public string Following { get; set; }
-        [Required]
-        public string Grups { get; set; }
+        public string Groups { get; set; }
     }
 }
