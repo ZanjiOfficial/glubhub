@@ -19,10 +19,10 @@ namespace glubhub.Data
             modelBuilder.Entity<glubhub.Models.User>(entity =>
             {
                 entity.HasKey(e => e.UserId);
-                entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.UserName).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.PasswordHash).IsRequired();
-                entity.Property(e => e.profilePicture).IsRequired();
+                entity.Property(e => e.ProfilePicture).IsRequired();
                 entity.Property(e => e.Creationdate).IsRequired();
                 entity.Property(e => e.Followers).IsRequired();
                 entity.Property(e => e.Following).IsRequired();
