@@ -6,7 +6,7 @@
         public string Description { get; set; }
         
         public double Weight { get; set; }
-        public Technique(string name, string description, double weight, string id)
+        public Technique(string name, string description, double weight, int id)
             : base("technique", description, weight, id)
         {
             Name = name;
