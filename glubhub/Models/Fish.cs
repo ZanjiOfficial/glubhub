@@ -1,6 +1,6 @@
 ﻿namespace glubhub.Models
 {
-    public class Fish : Indhold
+    public class Fish : Content
     {
         public string Species { get; set; }
         public string Length { get; set; }

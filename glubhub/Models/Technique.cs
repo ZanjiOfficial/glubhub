@@ -1,6 +1,6 @@
 ﻿namespace glubhub.Models
 {
-    public class Technique : Indhold
+    public class Technique : Content
     {
         public string Name { get; set; }
         public string Description { get; set; }

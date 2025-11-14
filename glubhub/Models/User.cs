@@ -6,7 +6,7 @@ namespace glubhub.Models
     {
         public int UserId { get; set; }
         [Required, MaxLength(255)] 
-        public string UserName { get; set; }
+        public string Username { get; set; }
         [Required, MaxLength(255)]
         public string Email { get; set; }
         [Required, MaxLength(255)]
@@ -16,12 +16,12 @@ namespace glubhub.Models
         [Required]
         public DateTime Creationdate { get; } 
         = DateTime.Now;
-        public int Followers { get; set; }
-        public string Following { get; set; }
+        public List<User> Followers { get; set; }
+        public List<User> Following { get; set; }
         
-        public string Groups { get; set; }
+        public List<Group> Groups { get; set; } = new List<Group>();
 
-        public User(string UserName, string Email, string PasswordHash, string ProfilePicture, DateTime Creationdate, int Followers, string Following, string Grups)
+        public User(string Username, string Email, string PasswordHash, string ProfilePicture, DateTime Creationdate, int Followers, string Following, string Groups)
         {
 
         }

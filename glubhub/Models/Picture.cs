@@ -1,6 +1,6 @@
 ﻿namespace glubhub.Models
 {
-    public class Picture : Indhold
+    public class Picture : Content
     {
         public string Description { get; set; }
         public string Link { get; set; }
