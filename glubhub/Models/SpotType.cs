@@ -1,0 +1,40 @@
+﻿namespace glubhub.Models
+{
+    public enum SpotType
+    {
+        River, 
+        Stream, 
+        Creek, 
+        Brook, 
+        Lake, 
+        Pond, 
+        Reservoir, 
+        Canal, 
+        Spring, 
+        Backwater, 
+        Marsh, 
+        Swamp, 
+        Wetland, 
+        Millpond,
+        Estuary, 
+        Lagoon, 
+        Bay, 
+        Sound, 
+        Inlet, 
+        Cove, 
+        Fjord, 
+        Harbor, 
+        Sea, 
+        Ocean, 
+        Reef, 
+        Shoal, 
+        Sandbar, 
+        Seamount, 
+        Pier, 
+        Jetty, 
+        Breakwater, 
+        Dock, 
+        Bridge, 
+        Dam
+    }
+}

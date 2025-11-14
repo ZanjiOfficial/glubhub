@@ -5,15 +5,17 @@
         public string Region { get; set; }
         public string Municipality { get; set; }
         public string City { get; set; }
-        public string Spot { get; set; }
-        public Double Coordinates { get; set; }
-        public Location(string region, string municipality, string city, string spot, Double coordinates)
+        public SpotType SpotType { get; set; }
+        public double CoordinatesY { get; set; }
+        public double CoordinatesX { get; set; }
+        public Location(string region, string municipality, string city, SpotType spotType, double coordinatesY, double coordinatesX)
         {
             Region = region;
             Municipality = municipality;
             City = city;
-            Spot = spot;
-            Coordinates = coordinates;
+            SpotType = SpotType;
+            CoordinatesY = coordinatesY;
+            CoordinatesX = coordinatesX;
         }
     }
 }

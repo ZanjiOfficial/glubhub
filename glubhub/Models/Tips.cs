@@ -1,6 +1,6 @@
 ﻿namespace glubhub.Models
 {
-    public class Tips : Indhold
+    public class Tips : Content
     {
         public string Text { get; set; }
         public string Type { get; set; }

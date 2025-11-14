@@ -3,9 +3,9 @@
     public class Time
     {
         public DateTime Date { get; set; }
-        public string Season { get; set; }
+        public Season Season { get; set; }
         public DateTime Time1 { get; set; }
-        public Time(DateTime date, string season, DateTime time)
+        public Time(DateTime date, Season season, DateTime time)
         {
             Date = date;
             Season = season;

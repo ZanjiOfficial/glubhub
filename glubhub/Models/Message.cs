@@ -2,11 +2,11 @@
 {
     public class Message
     {
-        public string RecipentId { get; set; }
-        public string SenderId { get; set; }
-        public string Content { get; set; }
-        public string Status { get; set; }
-        public Message(string recipentId, string senderId, string content, string status)
+        public int RecipentId { get; set; }
+        public int SenderId { get; set; }
+        public Content Content { get; set; }
+        public SeenStatus Status { get; set; }
+        public Message(int recipentId, int senderId, Content content, SeenStatus status)
         {
             RecipentId = recipentId;
             SenderId = senderId;
