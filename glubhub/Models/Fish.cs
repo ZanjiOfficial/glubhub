@@ -5,7 +5,7 @@
         public string Species { get; set; }
         public string Length { get; set; }
         public double Weight { get; set; }
-        public Fish(string species, string Length, double weight, string id)
+        public Fish(string species, string Length, double weight, int id)
             : base("fish", species, weight, id)
         {
             Species = species;
