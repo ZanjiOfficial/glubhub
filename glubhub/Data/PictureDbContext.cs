@@ -15,7 +15,7 @@ namespace glubhub.Data
 
             modelBuilder.Entity<glubhub.Models.Picture>(entity =>
             {
-                entity.HasKey(e => e.Id);
+                entity.HasKey(e => e.PictureId);
                 entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
                 entity.Property(e => e.Link).IsRequired().HasMaxLength(200);
             });

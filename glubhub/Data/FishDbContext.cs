@@ -14,7 +14,7 @@ namespace glubhub.Data
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<glubhub.Models.Fish>(entity =>
             {
-                entity.HasKey(e => e.Id);
+                entity.HasKey(e => e.FishId);
                 entity.Property(e => e.Species).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Length).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Weight).IsRequired();
