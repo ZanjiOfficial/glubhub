@@ -1,16 +1,17 @@
 ﻿using glubhub.Models;
 using glubhub.Data;
 using Microsoft.EntityFrameworkCore;
+using glubhub.Persistent.Interfaces;
 
-namespace glubhub.Persistent
+namespace glubhub.Persistent.Repositories
 {
-    public class UserRepo<T> : IUserRepo<T> where T : class
+    public class PictureRepository<T> : IPictureRepository<T> where T : Picture
     {
-        private readonly UserDbContext _context;
+        private readonly PictureDbContext _context;
         private readonly DbSet<T> _dbSet;
 
 
-        public UserRepo(UserDbContext context)
+        public PictureRepository(PictureDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();

@@ -7,13 +7,16 @@
         public string Cloudiness { get; set; }
         public double Temperature { get; set; }
         public double AirPressure { get; set; }
-        public Weather(double windSpeed, double rainamount, string cloudiness, double temperature, double airPressure)
+
+        public int WeatherId { get; set; }
+        public Weather(double windSpeed, double rainamount, string cloudiness, double temperature, double airPressure, int weatherId)
         {
             WindSpeed = windSpeed;
             RainAmount = rainamount;
             this.Cloudiness = cloudiness;
             Temperature = temperature;
             AirPressure = airPressure;
+            WeatherId = weatherId;
         }
     }
 }

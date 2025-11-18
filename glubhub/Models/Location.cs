@@ -8,7 +8,7 @@
         public SpotType SpotType { get; set; }
         public double CoordinatesY { get; set; }
         public double CoordinatesX { get; set; }
-        public int locationId { get; set; }
+        public int LocationId { get; set; }
         public Location(string region, string municipality, string city, SpotType spotType, double coordinatesY, double coordinatesX, int locationId)
         {
             Region = region;
@@ -17,7 +17,7 @@
             SpotType = SpotType;
             CoordinatesY = coordinatesY;
             CoordinatesX = coordinatesX;
-            this.locationId = locationId;
+            this.LocationId = locationId;
         }
     }
 }
