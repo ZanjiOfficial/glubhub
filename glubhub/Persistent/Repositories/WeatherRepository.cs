@@ -7,11 +7,11 @@ namespace glubhub.Persistent.Repositories
 {
     public class WeatherRepository<T> : IWeatherRepository<T> where T : Weather
     {
-        private readonly WeatherDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly DbSet<T> _dbSet;
 
 
-        public WeatherRepository(WeatherDbContext context)
+        public WeatherRepository(ApplicationDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();
@@ -20,7 +20,7 @@ namespace glubhub.Persistent.Repositories
 
         public async Task AddSync(T entity)
         {
-            _context.AddAsync(entity);
+            await _context.AddAsync(entity);
         }
 
         public void Delete(T entity)

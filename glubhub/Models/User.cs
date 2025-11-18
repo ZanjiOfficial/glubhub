@@ -21,9 +21,16 @@ namespace glubhub.Models
         
         public List<Group> Groups { get; set; } = new List<Group>();
 
-        public User(string Username, string Email, string PasswordHash, string ProfilePicture, DateTime Creationdate, int Followers, string Following, string Groups)
+        public User(string username, string email, string passwordHash, string profilePicture, int userId)
         {
-
+            UserId = userId;
+            Username = username;
+            Email = email;
+            PasswordHash = passwordHash;
+            ProfilePicture = profilePicture;
+            Followers = new List<User>();
+            Following = new List<User>();
+            Groups = new List<Group>();
         }
     }
 }

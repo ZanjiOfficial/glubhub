@@ -7,6 +7,11 @@
         public DateTime Time1 { get; set; }
 
         public int TimeId { get; set; }
+
+        public Time()
+        {
+        }
+
         public Time(DateTime date, Season season, DateTime time, int timeId)
         {
             Date = date;

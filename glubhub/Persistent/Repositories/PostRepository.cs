@@ -7,11 +7,11 @@ namespace glubhub.Persistent.Repositories
 {
     public class PostRepository<T> : IPostRepository<T> where T : Post
     {
-        private readonly PostDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly DbSet<T> _dbSet;
 
 
-        public PostRepository(PostDbContext context)
+        public PostRepository(ApplicationDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();
@@ -20,7 +20,7 @@ namespace glubhub.Persistent.Repositories
 
         public async Task AddSync(T entity)
         {
-            _context.AddAsync(entity);
+            await _context.AddAsync(entity);
         }
 
         public void Delete(T entity)

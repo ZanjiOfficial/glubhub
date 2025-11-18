@@ -7,11 +7,11 @@ namespace glubhub.Persistent.Repositories
 {
     public class TimeRepository<T> : ITimeRepository<T> where T : Time
     {
-        private readonly TimeDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly DbSet<T> _dbSet;
 
 
-        public TimeRepository(TimeDbContext context)
+        public TimeRepository(ApplicationDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();
@@ -20,7 +20,7 @@ namespace glubhub.Persistent.Repositories
 
         public async Task AddSync(T entity)
         {
-            _context.AddAsync(entity);
+            await _context.AddAsync(entity);
         }
 
         public void Delete(T entity)
