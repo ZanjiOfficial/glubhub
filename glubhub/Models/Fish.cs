@@ -5,11 +5,14 @@
         public string Species { get; set; }
         public string Length { get; set; }
         public double Weight { get; set; }
-        public Fish(string species, string Length, double weight, int id)
-            : base("fish", species, weight, id)
+        public int FishId { get; set; }
+        public Fish(string species, string length, double weight, int fishId)
+            : base("fish", species, weight, fishId)
         {
             Species = species;
             Weight = weight;
+            FishId = fishId;
+            this.Length = length;
         }
     }
 }

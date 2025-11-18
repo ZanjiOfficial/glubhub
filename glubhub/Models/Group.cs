@@ -6,8 +6,12 @@
         public List<User> Members { get; set; }
         public string Description { get; set; }
         public string Message { get; set; }
-        public Group(string Members, string Description, string massage) 
+        public Group(List<User> members, string Description, string massage, int groupId) 
         {
+            GroupId = groupId;
+            Description = Description;
+            Message = massage;
+            Members = members;
 
         }
     }

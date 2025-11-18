@@ -1,7 +1,7 @@
 ﻿using glubhub.Models;
-namespace glubhub.Persistent
+namespace glubhub.Persistent.Interfaces
 {
-    public interface IUserRepo<T> where T : class
+    public interface IUserRepository<T> where T : User
     {
         Task<T> GetByIdAsync(int id);
         Task<IEnumerable<T>> GetAllAsync();

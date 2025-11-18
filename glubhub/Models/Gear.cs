@@ -4,11 +4,13 @@
     {
         public string Category { get; set; }
         public string Description { get; set; }
-        public Gear(string category, string description, int id)
-            : base("gear", description, 0, id)
+        public int GearId { get; set; }
+        public Gear(string category, string description, int gearId)
+            : base("gear", description, 0, gearId)
         {
             Category = category;
             Description = description;
+            GearId = gearId;
         }
     }
 }

@@ -5,14 +5,14 @@
         public string Text { get; set; }
         public string Type { get; set; }
         public string Link { get; set; }
-        public int Id { get; set; }
-        public Tips(string text, string type, string link, int id)
-            : base("tips", text, link, id)
+        public int TipsId { get; set; }
+        public Tips(string text, string type, string link, int tipsId)
+            : base("tips", text, link, tipsId)
         {
             Text = text;
             Type = type;
             Link = link;
-            Id = id;
+            TipsId = tipsId;
         }
     }
 }

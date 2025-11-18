@@ -4,13 +4,13 @@
     {
         public string Description { get; set; }
         public string Link { get; set; }
-        public int Id { get; set; }
-        public Picture(string description, string link, int id)
-            : base("picture", description, link, id)
+        public int PictureId { get; set; }
+        public Picture(string description, string link, int pictureId)
+            : base("picture", description, link, pictureId)
         {
             Description = description;
             Link = link;
-            Id = id;
+            PictureId = pictureId;
         }
     }
 }
