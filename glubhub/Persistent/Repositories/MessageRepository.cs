@@ -7,11 +7,11 @@ namespace glubhub.Persistent.Repositories
 {
     public class MessageRepository<T> : IMessageRepository<T> where T : Message
     {
-        private readonly MessageDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly DbSet<T> _dbSet;
 
 
-        public MessageRepository(MessageDbContext context)
+        public MessageRepository(ApplicationDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();
@@ -20,7 +20,7 @@ namespace glubhub.Persistent.Repositories
 
         public async Task AddSync(T entity)
         {
-            await _context.AddAsync(entity);
+           await _context.AddAsync(entity);
         }
 
         public void Delete(T entity)

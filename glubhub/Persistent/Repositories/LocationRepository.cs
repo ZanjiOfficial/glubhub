@@ -7,11 +7,11 @@ namespace glubhub.Persistent.Repositories
 {
     public class LocationRepository<T> : ILocationRepository<T> where T : Location
     {
-        private readonly LocationDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly DbSet<T> _dbSet;
 
 
-        public LocationRepository(LocationDbContext context)
+        public LocationRepository(ApplicationDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();

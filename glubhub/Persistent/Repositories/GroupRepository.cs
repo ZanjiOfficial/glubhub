@@ -7,11 +7,11 @@ namespace glubhub.Persistent.Repositories
 {
     public class GroupRepository<T> : IGroupRepository<T> where T : Group
     {
-        private readonly GroupDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly DbSet<T> _dbSet;
 
 
-        public GroupRepository(GroupDbContext context)
+        public GroupRepository(ApplicationDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();

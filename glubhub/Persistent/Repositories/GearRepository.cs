@@ -7,11 +7,11 @@ namespace glubhub.Persistent.Repositories
 {
     public class GearRepository<T> : IGearRepository<T> where T : Gear
     {
-        private readonly GearDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly DbSet<T> _dbSet;
 
 
-        public GearRepository(GearDbContext context)
+        public GearRepository(ApplicationDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();

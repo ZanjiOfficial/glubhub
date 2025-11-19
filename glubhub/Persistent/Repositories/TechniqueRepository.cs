@@ -7,11 +7,11 @@ namespace glubhub.Persistent.Repositories
 {
     public class TechniqueRepository<T> : ITechniqueRepository<T> where T : Technique
     {
-        private readonly TechniqueDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly DbSet<T> _dbSet;
 
 
-        public TechniqueRepository(TechniqueDbContext context)
+        public TechniqueRepository(ApplicationDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();

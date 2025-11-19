@@ -7,11 +7,11 @@ namespace glubhub.Persistent.Repositories
 {
     public class PictureRepository<T> : IPictureRepository<T> where T : Picture
     {
-        private readonly PictureDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly DbSet<T> _dbSet;
 
 
-        public PictureRepository(PictureDbContext context)
+        public PictureRepository(ApplicationDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();
@@ -20,7 +20,7 @@ namespace glubhub.Persistent.Repositories
 
         public async Task AddSync(T entity)
         {
-           await _context.AddAsync(entity);
+            await _context.AddAsync(entity);
         }
 
         public void Delete(T entity)

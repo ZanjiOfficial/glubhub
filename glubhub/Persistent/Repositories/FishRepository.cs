@@ -7,11 +7,11 @@ namespace glubhub.Persistent.Repositories
 {
     public class FishRepository<T> : IFishRepository<T> where T : Fish
     {
-        private readonly FishDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly DbSet<T> _dbSet;
 
 
-        public FishRepository(FishDbContext context)
+        public FishRepository(ApplicationDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();

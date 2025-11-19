@@ -9,10 +9,10 @@
         public double AirPressure { get; set; }
 
         public int WeatherId { get; set; }
-        public Weather(double windSpeed, double rainamount, string cloudiness, double temperature, double airPressure, int weatherId)
+        public Weather(double windSpeed, double rainAmount, string cloudiness, double temperature, double airPressure, int weatherId)
         {
             WindSpeed = windSpeed;
-            RainAmount = rainamount;
+            RainAmount = rainAmount;
             this.Cloudiness = cloudiness;
             Temperature = temperature;
             AirPressure = airPressure;

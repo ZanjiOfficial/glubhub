@@ -6,9 +6,9 @@ namespace glubhub.Controls
 {
     public class UserService
     {
-        private readonly UserDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public UserService(UserDbContext context)
+        public UserService(ApplicationDbContext context)
         {
             _context = context;
         }
