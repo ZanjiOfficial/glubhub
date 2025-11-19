@@ -12,7 +12,7 @@ using glubhub.Data;
 namespace glubhub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251118210842_InitialCreate")]
+    [Migration("20251119115341_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
