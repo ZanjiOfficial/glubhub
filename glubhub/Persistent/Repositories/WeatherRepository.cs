@@ -20,7 +20,7 @@ namespace glubhub.Persistent.Repositories
 
         public async Task AddSync(T entity)
         {
-            _context.AddAsync(entity);
+           await _context.AddAsync(entity);
         }
 
         public void Delete(T entity)

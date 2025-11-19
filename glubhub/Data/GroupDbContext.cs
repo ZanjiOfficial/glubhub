@@ -3,7 +3,7 @@ namespace glubhub.Data
 {
     public class GroupDbContext : DbContext
     {
-        GroupDbContext(DbContextOptions<GroupDbContext> options) : base(options)
+        public GroupDbContext(DbContextOptions<GroupDbContext> options) : base(options)
         {
         }
         public DbSet<glubhub.Models.Group> Groups { get; set; }
