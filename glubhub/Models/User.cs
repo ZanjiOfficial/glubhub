@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace glubhub.Models
 {
-    public class User
+    public class User : IdentityUser
     {
         public int UserId { get; set; }
         [Required, MaxLength(255)] 
@@ -16,7 +17,7 @@ namespace glubhub.Models
         [Required]
         public DateTime Creationdate { get; } 
         = DateTime.Now;
-        public List<User> Followers { get; set; }
+        public List<User> Followers { get; set; }   
         public List<User> Following { get; set; }
         
         public List<Group> Groups { get; set; } = new List<Group>();
