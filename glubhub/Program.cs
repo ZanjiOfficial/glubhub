@@ -1,19 +1,17 @@
 ﻿using glubhub.Components;
 using glubhub.Models;
 using glubhub.Persistent.Repositories;
-using glubhub.Components;
 using glubhub.Data;
 using glubhub.Persistent.Interfaces;
-using glubhub.Persistent.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using System.Runtime;
-using glubhub.Data;
 using glubhub.Components.Account;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using System.Reflection;
 using Microsoft.Extensions.Configuration.UserSecrets;
+using Microsoft.AspNetCore.ResponseCompression;
+using glubhub.Hubs;
 
 namespace glubhub
 {
@@ -25,7 +23,7 @@ namespace glubhub
 
             // Add services to the container.
             builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-               
+
 
 
 
@@ -34,33 +32,38 @@ namespace glubhub
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            builder.Services.AddSignalR();
+            builder.Services.AddResponseCompression(opts =>
+            {
+                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+                    [ "application/octet-stream" ]);
+            });
 
+            builder.Services.AddCascadingAuthenticationState();
 
-builder.Services.AddCascadingAuthenticationState();
+            builder.Services.AddScoped<IdentityUserAccessor>();
 
-builder.Services.AddScoped<IdentityUserAccessor>();
+            builder.Services.AddScoped<IdentityRedirectManager>();
 
-builder.Services.AddScoped<IdentityRedirectManager>();
+            builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
-builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+            builder.Services.AddAuthentication(options =>
+                {
+                    options.DefaultScheme = IdentityConstants.ApplicationScheme;
+                    options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+                })
+                .AddIdentityCookies();
 
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-    })
-    .AddIdentityCookies();
+            builder.Services.AddIdentityCore<User>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddSignInManager()
+                .AddDefaultTokenProviders();
 
-builder.Services.AddIdentityCore<User>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddSignInManager()
-    .AddDefaultTokenProviders();
+            builder.Services.AddSingleton<IEmailSender<User>, IdentityNoOpEmailSender>();
 
-builder.Services.AddSingleton<IEmailSender<User>, IdentityNoOpEmailSender>();
-
-builder.Services.AddAuthorizationCore();
-builder.Services.AddAuthentication();
-builder.Services.AddAuthorization();
+            builder.Services.AddAuthorizationCore();
+            builder.Services.AddAuthentication();
+            builder.Services.AddAuthorization();
             builder.Services.AddScoped(typeof(IUserRepository<>), typeof(UserRepository<>));
             builder.Services.AddScoped(typeof(IFishRepository<>), typeof(FishRepository<>));
             builder.Services.AddScoped(typeof(IGearRepository<>), typeof(GearRepository<>));
@@ -83,6 +86,7 @@ builder.Services.AddAuthorization();
 
             var app = builder.Build();
 
+
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
@@ -91,16 +95,18 @@ builder.Services.AddAuthorization();
                 app.UseHsts();
             }
 
+            app.UseResponseCompression();
+            app.MapHub<ChatHub>("/chathub");
             app.UseHttpsRedirection();
 
             app.UseStaticFiles();
             app.UseAntiforgery();
-
+            app.MapAdditionalIdentityEndpoints(); ;
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
 
             app.Run();
 
-app.MapAdditionalIdentityEndpoints();;
-
-app.Run();
+        }
+    }
+}
