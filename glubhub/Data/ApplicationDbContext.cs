@@ -143,15 +143,15 @@ namespace glubhub.Data
             });
 
             // Weather entity configuration
-            modelBuilder.Entity<glubhub.Models.Weather>(entity =>
-            {
-                entity.HasKey(e => e.WeatherId);
-                entity.Property(e => e.Temperature).IsRequired();
-                entity.Property(e => e.RainAmount).IsRequired();
-                entity.Property(e => e.Cloudiness).HasMaxLength(100);
-                entity.Property(e => e.AirPressure).IsRequired();
-                entity.Property(e => e.WindSpeed).IsRequired();
-            });
+            //modelBuilder.Entity<glubhub.Models.Weather>(entity =>
+            //{
+            //    entity.HasKey(e => e.WeatherId);
+            //    entity.Property(e => e.Temperature).IsRequired();
+            //    entity.Property(e => e.RainAmount).IsRequired();
+            //    entity.Property(e => e.Cloudiness).HasMaxLength(100);
+            //    entity.Property(e => e.AirPressure).IsRequired();
+            //    entity.Property(e => e.WindSpeed).IsRequired();
+            //});
         }
     }
 }
