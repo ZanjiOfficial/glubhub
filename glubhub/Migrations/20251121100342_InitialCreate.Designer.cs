@@ -358,7 +358,7 @@ namespace glubhub.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<int>("RecipentId")
+                    b.Property<int>("RecipientId")
                         .HasColumnType("int");
 
                     b.Property<int>("SenderId")
