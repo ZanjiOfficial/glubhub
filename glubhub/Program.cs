@@ -26,8 +26,6 @@ namespace glubhub
 
 
 
-
-
             //DBContext ConnectionString
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
