@@ -14,5 +14,7 @@ namespace glubhub.Controls
         }
 
         public DbSet<User> Users => _context.Users;
+
+
     }
 }

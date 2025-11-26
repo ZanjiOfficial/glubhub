@@ -1,0 +1,69 @@
+﻿@page "/editpost/{PostId:int}"
+
+@inject IPostRepository<Post> postRepository
+
+@if (PostId == 0)
+{
+    <h3>Create Post</h3>
+}
+else
+{
+    <h3>Edit @post.Content</h3>
+}
+
+@if (post != null)
+{
+    <EditForm Model="@post" OnValidSubmit="HandleSubmit" FormName="CreatePostForm">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+        <label>Content</label>
+        <InputText @bind-Value="post.Content" class="form-control" />
+        <InputTextArea @bind-Value="post.Comment" class="form-control" />
+        <button type="submit" class="btn btn-danger">Submit</button>
+    </EditForm>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+@code {
+    [Parameter]
+    public int PostId { get; set; }
+    Post post { get; set; } = new Post("", "", 0);
+    private List<Post> posts = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (PostId != 0)
+        {
+            post = await postRepository.GetByIdAsync(PostId);
+            if (post == null)
+            {
+                post = new Post("", "", PostId);
+            }
+        }
+        else
+        {
+            post = new Post("", "", 0);
+        }
+    }
+
+    async Task HandleSubmit()
+    {
+        if (PostId == 0)
+        {
+            await postRepository.AddAsync(post);
+        }
+        else
+        {
+            postRepository.Update(post);
+        }
+    }
+
+    async Task Delete()
+    {
+        postRepository.Delete(post);
+        await postRepository.SaveChangesAsync();
+    }
+}

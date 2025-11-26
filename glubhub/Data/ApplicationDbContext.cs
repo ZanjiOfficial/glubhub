@@ -88,7 +88,7 @@ namespace glubhub.Data
                 entity.Property(e => e.SenderId).IsRequired();
                 entity.Property(e => e.RecipentId).IsRequired();
                 entity.Property(e => e.Status).IsRequired();
-                
+
                 entity.Property(e => e.Content).IsRequired().HasMaxLength(1000);
             });
 
@@ -107,7 +107,7 @@ namespace glubhub.Data
                 entity.Property(e => e.Content).IsRequired().HasMaxLength(1000);
                 entity.Property(e => e.Comment).HasMaxLength(500);
 
-                
+
                 entity.HasOne(e => e.Location);
             });
 
