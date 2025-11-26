@@ -15,10 +15,10 @@ namespace glubhub.Models
         public string ProfilePicture { get; set; } = string.Empty;
 
         public DateTime CreationDate { get; set; } = DateTime.Now;
-        public virtual ICollection<Group> Groups { get; set; } = new List<Group>();
+        public ICollection<Group> Groups { get; set; } = new List<Group>();
 
-        public virtual ICollection<ApplicationUser> Followers { get; set; } = new List<ApplicationUser>();
-        public virtual ICollection<ApplicationUser> Following { get; set; } = new List<ApplicationUser>();
+        public ICollection<ApplicationUser> Followers { get; set; } = new List<ApplicationUser>();
+        public ICollection<ApplicationUser> Following { get; set; } = new List<ApplicationUser>();
 
         public ApplicationUser() { }
 

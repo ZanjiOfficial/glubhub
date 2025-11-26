@@ -52,6 +52,9 @@ else
     <small>Status: @(IsConnected ? "Forbundet" : "Ikke forbundet")</small>
 </div>
 
+
+
+
 @code {
     [Parameter] public string? RecipientId { get; set; }
 
@@ -145,7 +148,10 @@ else
             await hubConnection.SendAsync("SendMessageToUser", RecipientId, messageInput);
             messageInput = string.Empty;
         }
+
     }
+
+
 
     private async Task OnKeyPress(KeyboardEventArgs e)
     {
@@ -155,8 +161,13 @@ else
         }
     }
 
+
+
+
     public bool IsConnected =>
         hubConnection?.State == HubConnectionState.Connected;
+
+
 
     public async ValueTask DisposeAsync()
     {
