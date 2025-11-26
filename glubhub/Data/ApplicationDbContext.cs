@@ -7,14 +7,6 @@ namespace glubhub.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
-    
-
-        //public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-        //{
-        //}
-
-        //public DbSet<glubhub.Models.User> Users { get; set; }
-
         public DbSet<glubhub.Models.Fish> Fish { get; set; }
         public DbSet<glubhub.Models.Gear> Gear { get; set; }
         public DbSet<glubhub.Models.Group> Groups { get; set; }
