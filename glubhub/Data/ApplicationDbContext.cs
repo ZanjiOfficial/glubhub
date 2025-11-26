@@ -1,18 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using glubhub.Models;
 
 namespace glubhub.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
-    
-
-        //public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-        //{
-        //}
-
-        public DbSet<glubhub.Models.User> Users { get; set; }
         public DbSet<glubhub.Models.Fish> Fish { get; set; }
         public DbSet<glubhub.Models.Gear> Gear { get; set; }
         public DbSet<glubhub.Models.Group> Groups { get; set; }
@@ -23,26 +17,23 @@ namespace glubhub.Data
         public DbSet<glubhub.Models.Technique> Techniques { get; set; }
         public DbSet<glubhub.Models.Time> Times { get; set; }
         public DbSet<glubhub.Models.Tips> Tips { get; set; }
-        public DbSet<glubhub.Models.Weather> Weathers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             // User entity configuration
-            modelBuilder.Entity<glubhub.Models.User>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Username).IsRequired().HasMaxLength(255);
-                entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
-                entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(255);
-                entity.Property(e => e.ProfilePicture).IsRequired();
-                entity.Property(e => e.Creationdate).IsRequired();
+            //modelBuilder.Entity<glubhub.Models.User>(entity =>
+            //{
+            //    // Don't configure Id, Email, PasswordHash - Identity handles these
+            //    entity.Property(e => e.UserName).IsRequired().HasMaxLength(255);
+            //    entity.Property(e => e.ProfilePicture).IsRequired();
+            //    entity.Property(e => e.CreationDate).IsRequired(); // Fixed property name
 
-                // Ignore collection properties for now
-                entity.Ignore(e => e.Followers);
-                entity.Ignore(e => e.Following);
-            });
+            //    // Ignore collection properties for now
+            //    entity.Ignore(e => e.Followers);
+            //    entity.Ignore(e => e.Following);
+            //});
 
             // Fish entity configuration 
             modelBuilder.Entity<glubhub.Models.Fish>(entity =>
@@ -85,16 +76,34 @@ namespace glubhub.Data
                 entity.Property(e => e.CoordinatesY).IsRequired();
             });
 
-            // Message entity configuration - Fix Content property
+
+
+
+            // Message entity configuration
             modelBuilder.Entity<glubhub.Models.Message>(entity =>
             {
                 entity.HasKey(e => e.MessageId);
-                entity.Property(e => e.SenderId).IsRequired();
-                entity.Property(e => e.RecipentId).IsRequired();
-                entity.Property(e => e.Status).IsRequired();
-                
+
+                entity.Property(e => e.SenderId).IsRequired().HasMaxLength(450);
+                entity.Property(e => e.RecipientId).IsRequired().HasMaxLength(450);
                 entity.Property(e => e.Content).IsRequired().HasMaxLength(1000);
+                entity.Property(e => e.CreatedAt).IsRequired();
+                entity.Property(e => e.Status).IsRequired().HasDefaultValue(SeenStatus.Unseen);
+
+                // Link to ApplicationUser instead of User
+                entity.HasOne(m => m.Sender)
+                      .WithMany()
+                      .HasForeignKey(m => m.SenderId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(m => m.Recipient)
+                      .WithMany()
+                      .HasForeignKey(m => m.RecipientId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
+
+
+
 
             // Picture entity configuration
             modelBuilder.Entity<glubhub.Models.Picture>(entity =>

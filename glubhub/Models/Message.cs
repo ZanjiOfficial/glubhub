@@ -1,21 +1,32 @@
-﻿namespace glubhub.Models
+﻿using glubhub.Data;
+using System.ComponentModel.DataAnnotations;
+
+namespace glubhub.Models
 {
     public class Message
     {
-        public int RecipentId { get; set; }
-        public int SenderId { get; set; }
-        public string Content { get; set; }
-        public SeenStatus Status { get; set; }
+        [Key]
         public int MessageId { get; set; }
+        [Required]
+        public string SenderId { get; set; } // Use string for Identity UserId
+        [Required]
+        public string RecipientId { get; set; } // Fixed typo
+        [Required]
+        public string Content { get; set; }
+        public SeenStatus Status { get; set; } = SeenStatus.Unseen;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // Navigation properties
+        public ApplicationUser Sender { get; set; }
+        public ApplicationUser Recipient { get; set; }
 
         public Message() { }
-        public Message(int recipentId, int senderId, SeenStatus status, int messageId, string content)
+
+        public Message(string senderId, string recipientId, string content)
         {
-            RecipentId = recipentId;
             SenderId = senderId;
-            Status = status;
-            MessageId = messageId;
-            Content =  content;
+            RecipientId = recipientId;
+            Content = content;
         }
     }
 }
