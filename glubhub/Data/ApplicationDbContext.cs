@@ -17,7 +17,6 @@ namespace glubhub.Data
         public DbSet<glubhub.Models.Technique> Techniques { get; set; }
         public DbSet<glubhub.Models.Time> Times { get; set; }
         public DbSet<glubhub.Models.Tips> Tips { get; set; }
-        public DbSet<glubhub.Models.Weather> Weathers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,7 +26,7 @@ namespace glubhub.Data
             //modelBuilder.Entity<glubhub.Models.User>(entity =>
             //{
             //    // Don't configure Id, Email, PasswordHash - Identity handles these
-            //    entity.Property(e => e.Username).IsRequired().HasMaxLength(255);
+            //    entity.Property(e => e.UserName).IsRequired().HasMaxLength(255);
             //    entity.Property(e => e.ProfilePicture).IsRequired();
             //    entity.Property(e => e.CreationDate).IsRequired(); // Fixed property name
 

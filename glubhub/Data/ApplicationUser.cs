@@ -8,8 +8,7 @@ namespace glubhub.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        [Required, MaxLength(255)]
-        public string Username { get; set; } = string.Empty;
+        // UserName fjernet for at bruge inherited UserName property fra IdentityUser
 
         [Required]
         public string ProfilePicture { get; set; } = string.Empty;
@@ -22,9 +21,10 @@ namespace glubhub.Models
 
         public ApplicationUser() { }
 
-        public ApplicationUser(string username, string profilePicture)
+        public ApplicationUser(string UserName, string profilePicture)
         {
-            Username = username;
+            //bruger predefined UserName property fra IdentityUser
+            UserName = UserName;
             ProfilePicture = profilePicture;
         }
     }
