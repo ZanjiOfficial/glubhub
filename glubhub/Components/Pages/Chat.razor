@@ -9,13 +9,26 @@
 
 <PageTitle>Fiskebeskeder</PageTitle>
 
-
-
+@if (systemMessages.Count == 0)
+{
+    <p>Der er ingen beskeder.</p>
+}
+else
+{
+    <ul>
+        @foreach (var message in systemMessages)
+        {
+            <li>@message</li>
+        }
+    </ul>
+}
 
 
 
 
 @code {
+
+    private List<string> systemMessages = new List<string>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -24,9 +37,20 @@
             .WithAutomaticReconnect()
             .Build();
 
+        hubconnection.On<string>("ReceiveSystemMessage", RecieveSystemMessage);
+
         await hubconnection.StartAsync();
     }
 
+
+    private void RecieveSystemMessage(string message)
+    {
+        if (!string.IsNullOrEmpty(message))
+        {
+            systemMessages.Add(message);
+            StateHasChanged(); //ikke nødvendigt, men hvis vi ændre rendermode til noget andet end InteractiveServer.
+        }
+    }
 
 }
 
