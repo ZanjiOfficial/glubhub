@@ -5,6 +5,8 @@ VisualStudioVersion = 17.13.36105.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "glubhub", "glubhub\glubhub.csproj", "{5FA771AA-EEF7-4190-8A46-6E44510A3FC9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatHub", "ChatHub\ChatHub.csproj", "{0D767DD5-5536-43D0-8865-0CAD669D0580}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{5FA771AA-EEF7-4190-8A46-6E44510A3FC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5FA771AA-EEF7-4190-8A46-6E44510A3FC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5FA771AA-EEF7-4190-8A46-6E44510A3FC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D767DD5-5536-43D0-8865-0CAD669D0580}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D767DD5-5536-43D0-8865-0CAD669D0580}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D767DD5-5536-43D0-8865-0CAD669D0580}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D767DD5-5536-43D0-8865-0CAD669D0580}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

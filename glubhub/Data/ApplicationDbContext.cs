@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 using glubhub.Models;
 
 namespace glubhub.Data
@@ -22,18 +21,6 @@ namespace glubhub.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // User entity configuration
-            //modelBuilder.Entity<glubhub.Models.User>(entity =>
-            //{
-            //    // Don't configure Id, Email, PasswordHash - Identity handles these
-            //    entity.Property(e => e.UserName).IsRequired().HasMaxLength(255);
-            //    entity.Property(e => e.ProfilePicture).IsRequired();
-            //    entity.Property(e => e.CreationDate).IsRequired(); // Fixed property name
-
-            //    // Ignore collection properties for now
-            //    entity.Ignore(e => e.Followers);
-            //    entity.Ignore(e => e.Following);
-            //});
 
             // Fish entity configuration 
             modelBuilder.Entity<glubhub.Models.Fish>(entity =>
@@ -102,9 +89,7 @@ namespace glubhub.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
-
-
-
+            
             // Picture entity configuration
             modelBuilder.Entity<glubhub.Models.Picture>(entity =>
             {
@@ -150,17 +135,6 @@ namespace glubhub.Data
                 entity.Property(e => e.Type).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Link).HasMaxLength(200);
             });
-
-            // Weather entity configuration
-            //modelBuilder.Entity<glubhub.Models.Weather>(entity =>
-            //{
-            //    entity.HasKey(e => e.WeatherId);
-            //    entity.Property(e => e.Temperature).IsRequired();
-            //    entity.Property(e => e.RainAmount).IsRequired();
-            //    entity.Property(e => e.Cloudiness).HasMaxLength(100);
-            //    entity.Property(e => e.AirPressure).IsRequired();
-            //    entity.Property(e => e.WindSpeed).IsRequired();
-            //});
         }
     }
 }
