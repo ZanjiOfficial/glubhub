@@ -1,69 +1,101 @@
-﻿@page "/editpost/{PostId:int}"
-
+﻿@page "/posts"
 @inject IPostRepository<Post> postRepository
 
-@if (PostId == 0)
+<h3>Create a post</h3>
+
+<EditForm Model="@post"
+          OnValidSubmit="CreatePostAsync"
+          FormName="PostForm">
+    <DataAnnotationsValidator />
+
+    <InputTextArea @bind-Value="post.Content"
+                   class="form-control"
+                   rows="3"
+                   placeholder="What's happening?"
+                   maxlength="280" />
+
+    <ValidationMessage For="@(() => post.Content)" />
+
+    <button type="submit" class="btn btn-primary mt-2"
+            disabled="@isSubmitting">
+        @(isSubmitting ? "Posting..." : "Post")
+    </button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(statusMessage))
 {
-    <h3>Create Post</h3>
-}
-else
-{
-    <h3>Edit @post.Content</h3>
+    <div class="alert alert-success mt-2">@statusMessage</div>
 }
 
-@if (post != null)
+<hr />
+<h3>Latest posts (@posts?.Count ?? 0)</h3>
+
+@if (posts == null)
 {
-    <EditForm Model="@post" OnValidSubmit="HandleSubmit" FormName="CreatePostForm">
-        <DataAnnotationsValidator/>
-        <ValidationSummary/>
-        <label>Content</label>
-        <InputText @bind-Value="post.Content" class="form-control" />
-        <InputTextArea @bind-Value="post.Comment" class="form-control" />
-        <button type="submit" class="btn btn-danger">Submit</button>
-    </EditForm>
+    <p><em>Loading…</em></p>
+}
+else if (!posts.Any())
+{
+    <p>No posts yet.</p>
 }
 else
 {
-    <p>Loading...</p>
+    @foreach (var p in posts.OrderByDescending(x => x.Timestamp))
+    {
+        <div class="card mb-2">
+            <div class="card-body">
+                <small class="text-muted">@p.Timestamp.ToString("g")</small>
+                <p>@p.Content</p>
+            </div>
+        </div>
+    }
 }
 
 @code {
-    [Parameter]
-    public int PostId { get; set; }
-    Post post { get; set; } = new Post("", "", 0);
-    private List<Post> posts = new();
+    private Post post = new();
+    private List<Post>? posts;
+    private bool isSubmitting;
+    private string statusMessage = "";
 
     protected override async Task OnInitializedAsync()
     {
-        if (PostId != 0)
-        {
-            post = await postRepository.GetByIdAsync(PostId);
-            if (post == null)
-            {
-                post = new Post("", "", PostId);
-            }
-        }
-        else
-        {
-            post = new Post("", "", 0);
-        }
+        await LoadPosts();
     }
 
-    async Task HandleSubmit()
+    private async Task LoadPosts()
     {
-        if (PostId == 0)
+        posts = (await postRepository.GetAllAsync())?.ToList();
+    }
+
+    private async Task CreatePostAsync()
+    {
+        if (string.IsNullOrWhiteSpace(post.Content)) return;
+
+        isSubmitting = true;
+        statusMessage = "";
+        StateHasChanged();  // ✅ Forces UI refresh immediately
+
+        try
         {
+            post.Timestamp = DateTime.UtcNow;
             await postRepository.AddAsync(post);
-        }
-        else
-        {
-            postRepository.Update(post);
-        }
-    }
+            await postRepository.SaveChangesAsync();
 
-    async Task Delete()
-    {
-        postRepository.Delete(post);
-        await postRepository.SaveChangesAsync();
+            // Add to top of list and refresh
+            posts ??= new();
+            posts.Insert(0, post);
+
+            statusMessage = "Post created successfully!";  // ✅ Visual feedback
+            post = new Post();  // Clear form
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();  // ✅ Forces UI refresh after completion
+        }
     }
 }
