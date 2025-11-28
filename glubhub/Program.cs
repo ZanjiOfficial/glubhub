@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.AspNetCore.ResponseCompression;
 using glubhub.Hubs;
+using MudBlazor.Services;
 
 namespace glubhub
 {
@@ -37,6 +38,8 @@ namespace glubhub
                     [ "application/octet-stream" ]);
             });
 
+            builder.Services.AddMudServices();
+
             builder.Services.AddCascadingAuthenticationState();
 
             builder.Services.AddScoped<IdentityUserAccessor>();
@@ -53,6 +56,7 @@ namespace glubhub
                 .AddIdentityCookies();
 
             builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddSignInManager()
                 .AddDefaultTokenProviders();
@@ -78,6 +82,7 @@ namespace glubhub
             builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true);
             builder.Services.AddHttpClient<WeatherService>();
             builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+            
 
 
 
