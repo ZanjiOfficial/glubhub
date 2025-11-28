@@ -360,9 +360,10 @@ namespace glubhub.Migrations
                 {
                     PostId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Comment = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    LocationId = table.Column<int>(type: "int", nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false)
+                    Comment = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    LocationId = table.Column<int>(type: "int", nullable: true),
+                    Content = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -371,8 +372,7 @@ namespace glubhub.Migrations
                         name: "FK_Posts_Locations_LocationId",
                         column: x => x.LocationId,
                         principalTable: "Locations",
-                        principalColumn: "LocationId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "LocationId");
                 });
 
             migrationBuilder.CreateIndex(

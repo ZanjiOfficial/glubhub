@@ -429,11 +429,11 @@ namespace glubhub.Migrations
 
             modelBuilder.Entity("glubhub.Models.Post", b =>
                 {
-                    b.Property<int?>("PostId")
+                    b.Property<int>("PostId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("PostId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PostId"));
 
                     b.Property<string>("Comment")
                         .HasMaxLength(500)

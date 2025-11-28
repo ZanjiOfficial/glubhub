@@ -119,6 +119,7 @@ namespace glubhub.Data
                 entity.HasKey(e => e.PostId);
                 entity.Property(e => e.Content).IsRequired().HasMaxLength(1000);
                 entity.Property(e => e.Comment).HasMaxLength(500);
+                entity.Property(e => e.Timestamp).IsRequired();
 
 
                 entity.HasOne(e => e.Location);
