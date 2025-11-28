@@ -429,14 +429,13 @@ namespace glubhub.Migrations
 
             modelBuilder.Entity("glubhub.Models.Post", b =>
                 {
-                    b.Property<int>("PostId")
+                    b.Property<int?>("PostId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PostId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("PostId"));
 
                     b.Property<string>("Comment")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -445,8 +444,11 @@ namespace glubhub.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<int>("LocationId")
+                    b.Property<int?>("LocationId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("PostId");
 
@@ -635,9 +637,7 @@ namespace glubhub.Migrations
                 {
                     b.HasOne("glubhub.Models.Location", "Location")
                         .WithMany()
-                        .HasForeignKey("LocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("LocationId");
 
                     b.Navigation("Location");
                 });
