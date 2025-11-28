@@ -1,5 +1,9 @@
 ﻿@using glubhub.Models
 @inject IPostRepository<Post> PostRepository
+@inject IGearRepository<Gear> GearRepository
+@inject IFishRepository<Fish> FishRepository
+@inject ITechniqueRepository<Technique> TechniqueRepository
+@inject ITipsRepository<Tips> TipsRepository
 
 <h4>Share your latest catch</h4>
 
@@ -29,40 +33,106 @@
                        placeholder="Tell us about the catch..." />
     </div>
 
+    <!-- fishing-specific fields -->
+    <InputSelect class="form-select mb-1" @bind-Value="selectedFishId">
+        <option value="">Fish species</option>
+        @foreach (var f in fishes)
+        {
+            <option value="@f.FishId">@f.Species</option>
+        }
+    </InputSelect>
+
+    <InputSelect class="form-select mb-1" @bind-Value="selectedGearId">
+        <option value="">Gear</option>
+        @foreach (var g in gears)
+        {
+            <option value="@g.GearId">@g.Category</option>
+        }
+    </InputSelect>
+
+    <InputSelect class="form-select mb-1" @bind-Value="selectedTechniqueId">
+        <option value="">Technique</option>
+        @foreach (var t in techniques)
+        {
+            <option value="@t.TechniqueId">@t.Name</option>
+        }
+    </InputSelect>
+
+    <InputTextArea class="form-control mb-2"
+                   @bind-Value="tipsText"
+                   placeholder="Tips for other anglers" />
+
     <button class="btn btn-primary" disabled="@isSubmitting">
         @(isSubmitting ? "Posting..." : "Post")
     </button>
 </EditForm>
+
 
 <p class="text-success">@statusMessage</p>
 
 @foreach (var p in posts)
 {
     <div class="card my-3 shadow-sm border-0">
-        <div class="card-body pb-2">
-            <div class="d-flex justify-content-between align-items-baseline">
-                <div>
-                    <strong>@p.Comment</strong>
-                    @if (p.Location is not null)
-                    {
-                        <span class="text-muted">
-                            @p.Location.City, @p.Location.Region
-                        </span>
-                    }
+        <div class="card-body">
+
+            <div class="d-flex">
+                <div class="me-3">
+                    <div class="rounded-circle bg-secondary"
+                         style="width:40px;height:40px;"></div>
                 </div>
-                <small class="text-muted">@p.Timestamp.ToLocalTime()</small>
+
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>@p.Comment</strong>
+                            @if (p.Location is not null)
+                            {
+                                <span class="text-muted">
+                                    @p.Location.City, @p.Location.Region
+                                </span>
+                            }
+                        </div>
+                        <small class="text-muted">
+                            @p.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")
+                        </small>
+                    </div>
+
+                    <p class="mt-2 mb-2">@p.Content</p>
+
+                    @* optional fishing details *@
+                    @if (p.Fish is not null || p.Gear is not null || p.Technique is not null)
+                    {
+                        <div class="small text-muted mb-2">
+                            @if (p.Fish is not null)
+                            {
+                                <span>Fish: @p.Fish.Species</span>
+                            }
+                            @if (p.Gear is not null)
+                            {
+                                <span> · Gear: @p.Gear.Category</span>
+                            }
+                            @if (p.Technique is not null)
+                            {
+                                <span> · Technique: @p.Technique.Name</span>
+                            }
+                        </div>
+                    }
+
+                    <div class="text-muted small d-flex gap-3">
+                        <button class="btn btn-link p-0 small">Like</button>
+                        <button class="btn btn-link p-0 small">Comment</button>
+                        <button class="btn btn-link p-0 small">Share</button>
+                        <button class="btn btn-link p-0 text-danger small"
+                                @onclick="() => DeleteAsync(p)">
+                            Delete
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <p class="mt-2 mb-2">@p.Content</p>
-
-            <button class="btn btn-sm btn-outline-danger"
-                    @onclick="() => DeletePostAsync(p)">
-                Delete
-            </button>
         </div>
     </div>
 }
-
 
 @code {
     private Post post = new()
@@ -73,46 +143,107 @@
     private List<Post> posts = new();
     private bool isSubmitting;
     private string? statusMessage;
+    private List<Fish> fishes = new();
+    private List<Gear> gears = new();
+    private List<Technique> techniques = new();
+    private int? selectedFishId;
+    private int? selectedGearId;
+    private int? selectedTechniqueId;
+    private string? tipsText;
+    private Guid? selectedTipsId;
 
     // later wire to real logged-in user
     private Guid CurrentUserId => Guid.Parse("11111111-1111-1111-1111-111111111111");
 
     protected override async Task OnInitializedAsync()
     {
+        fishes = (await FishRepository.GetAllAsync()).ToList();
+        gears = (await GearRepository.GetAllAsync()).ToList();
+        techniques = (await TechniqueRepository.GetAllAsync()).ToList();
+
         posts = (await PostRepository.GetByUserAsync(CurrentUserId)).ToList();
     }
 
     private async Task CreatePostAsync()
     {
-        if (string.IsNullOrWhiteSpace(post.Content))
+        try
         {
-            statusMessage = "Please write something before posting.";
-            return;
+            if (string.IsNullOrWhiteSpace(post.Content))
+            {
+                statusMessage = "Please write something before posting.";
+                return;
+            }
+
+            isSubmitting = true;
+            statusMessage = null;
+
+            post.UserId = CurrentUserId;
+            post.Timestamp = DateTime.UtcNow;
+
+            post.FishId = selectedFishId;
+            post.GearId = selectedGearId;
+            post.TechniqueId = selectedTechniqueId;
+
+            if (!string.IsNullOrWhiteSpace(tipsText))
+            {
+                var tips = new Tips { Text = tipsText };
+                await TipsRepository.AddSync(tips);
+                await TipsRepository.SaveChangesAsync();
+                post.TipsId = tips.TipsId;
+            }
+
+            await PostRepository.AddAsync(post);
+            await PostRepository.SaveChangesAsync();
+
+            posts.Insert(0, post);
+            post = new Post
+            {
+                Location = new Location("", "", "", SpotType.Lake, 0, 0, 0)
+            };
+            selectedFishId = null;
+            selectedGearId = null;
+            selectedTechniqueId = null;
+            tipsText = null;
+
+            statusMessage = "Post created!";
         }
-
-        isSubmitting = true;
-        statusMessage = null;
-
-        post.UserId = CurrentUserId;
-        post.Timestamp = DateTime.UtcNow;
-
-        await PostRepository.AddAsync(post);
-        await PostRepository.SaveChangesAsync();
-
-        posts.Insert(0, post);
-        post = new Post
+        catch (Exception ex)
         {
-            Location = new Location("", "", "", SpotType.Lake, 0, 0, 0)
-        };
-
-        isSubmitting = false;
-        statusMessage = "Post created!";
+            statusMessage = $"Error: {ex.InnerException?.Message ?? ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
     }
 
-    private async Task DeletePostAsync(Post p)
+
+    private async Task DeleteAsync(Post p)
     {
-        await PostRepository.DeleteAsync(p);
-        await PostRepository.SaveChangesAsync();
-        posts.Remove(p);
+        if (p is null) return;
+
+        try
+        {
+            // Load tracked entity from DB (safer when items were fetched AsNoTracking)
+            var existing = await PostRepository.GetByIdAsync(p.PostId);
+            if (existing is null)
+            {
+                statusMessage = "Post not found in database.";
+                return;
+            }
+
+            await PostRepository.DeleteAsync(existing);
+            await PostRepository.SaveChangesAsync();
+
+            // remove from local list shown in UI
+            posts.Remove(p);
+
+            statusMessage = "Post deleted.";
+        }
+        catch (Exception ex)
+        {
+            // keep UI informative; log exception if you have a logger
+            statusMessage = $"Failed to delete post: {ex.Message}";
+        }
     }
 }
