@@ -9,19 +9,30 @@
 
 <PageTitle>Fiskebeskeder</PageTitle>
 
-@if (systemMessages.Count == 0)
+@if (string.IsNullOrEmpty(userName))
 {
-    <p>Der er ingen beskeder.</p>
+    <p>Indtast venligst dit brugernavn for at modtage beskeder.</p>
+    <UserInfoCollectionComponent OnUserSavedInfoSaved="OnUserInfoProvided"/>
 }
 else
 {
-    <ul>
-        @foreach (var message in systemMessages)
-        {
-            <li>@message</li>
-        }
-    </ul>
+    <h3>Velkommen, @userName!</h3>
+    @if (systemMessages.Count == 0)
+    {
+        <p>Der er ingen beskeder.</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var message in systemMessages)
+            {
+                <li>@message</li>
+            }
+        </ul>
+    }
 }
+
+
 
 
 
@@ -29,17 +40,29 @@ else
 @code {
 
     private List<string> systemMessages = new List<string>();
+    private string userName = string.Empty;
+    private string userID = string.Empty;
 
-    protected override async Task OnInitializedAsync()
+    private async Task OnUserInfoProvided(string userName)
     {
+        this.userName = userName;
+        this.userID = Guid.NewGuid().ToString();
+        await ConnectToServer(userID, userName);
+    }
+
+
+    private async Task ConnectToServer(string userId, string userName)
+    {
+    
         var hubconnection = new HubConnectionBuilder()
-            .WithUrl($"https://localhost:7076/chathub")
-            .WithAutomaticReconnect()
-            .Build();
+           .WithUrl($"https://localhost:7076/chathub?userid={userId}&username={userName}")
+           .WithAutomaticReconnect()
+           .Build();
 
         hubconnection.On<string>("ReceiveSystemMessage", RecieveSystemMessage);
 
         await hubconnection.StartAsync();
+    
     }
 
 
