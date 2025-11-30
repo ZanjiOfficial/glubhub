@@ -8,7 +8,7 @@ public interface IPostRepository<T> where T : Post
 
     Task AddAsync(T entity);
     Task UpdateAsync(T entity);
-    Task DeleteAsync(T entity);
+    Task DeleteAsync(int postId, Guid currentUserId);
 
     Task SaveChangesAsync();
 }

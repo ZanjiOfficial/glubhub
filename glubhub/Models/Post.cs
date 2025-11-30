@@ -12,7 +12,6 @@
         // I have made a empty default constructor for Post class -- Mikkel
 
         // Links to other class, but they stay separate for now -- Mikkel
-
         public int? FishId { get; set; }
         public Fish? Fish { get; set; }
 

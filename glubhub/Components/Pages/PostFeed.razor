@@ -4,9 +4,15 @@
 @inject IFishRepository<Fish> FishRepository
 @inject ITechniqueRepository<Technique> TechniqueRepository
 @inject ITipsRepository<Tips> TipsRepository
+@inject AuthenticationStateProvider AuthProv
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize]
 
 <h4>Share your latest catch</h4>
 
+@if (CurrentUserId is not null)
+{
 <EditForm Model="@post" OnValidSubmit="@CreatePostAsync">
     <div class="mb-1">
         <InputText class="form-control"
@@ -65,8 +71,14 @@
     <button class="btn btn-primary" disabled="@isSubmitting">
         @(isSubmitting ? "Posting..." : "Post")
     </button>
-</EditForm>
-
+    </EditForm>
+}
+else
+{
+    <p class="text-muted small">
+        Log in to share your latest catch. You can still browse all posts.
+    </p>
+}
 
 <p class="text-success">@statusMessage</p>
 
@@ -122,10 +134,14 @@
                         <button class="btn btn-link p-0 small">Like</button>
                         <button class="btn btn-link p-0 small">Comment</button>
                         <button class="btn btn-link p-0 small">Share</button>
-                        <button class="btn btn-link p-0 text-danger small"
-                                @onclick="() => DeleteAsync(p)">
-                            Delete
-                        </button>
+
+                        @if (CurrentUserId is not null && p.UserId == CurrentUserId.Value)
+                        {
+                            <button class="btn btn-link p-0 text-danger small"
+                                    @onclick="() => DeletePostAsync(p)">
+                                Delete
+                            </button>
+                        }
                     </div>
                 </div>
             </div>
@@ -151,21 +167,36 @@
     private int? selectedTechniqueId;
     private string? tipsText;
     private Guid? selectedTipsId;
-
-    // later wire to real logged-in user
-    private Guid CurrentUserId => Guid.Parse("11111111-1111-1111-1111-111111111111");
+    private Guid? CurrentUserId;
 
     protected override async Task OnInitializedAsync()
     {
-        fishes = (await FishRepository.GetAllAsync()).ToList();
-        gears = (await GearRepository.GetAllAsync()).ToList();
-        techniques = (await TechniqueRepository.GetAllAsync()).ToList();
+        // look for if anyone is logged in
+        var authState = await AuthProv.GetAuthenticationStateAsync();
+        var user = authState.User;
 
-        posts = (await PostRepository.GetByUserAsync(CurrentUserId)).ToList();
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var idString = user.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value;
+            if (Guid.TryParse(idString, out var id))
+                CurrentUserId = id;
+        }
+        else
+        {
+            CurrentUserId = null;
+        }
+
+        // Always just load all posts
+        posts = (await PostRepository.GetAllAsync()).ToList();
     }
 
     private async Task CreatePostAsync()
     {
+        if (CurrentUserId is null)
+        {
+            statusMessage = "You must be logged in to create a post.";
+            return;
+        }
         try
         {
             if (string.IsNullOrWhiteSpace(post.Content))
@@ -177,7 +208,13 @@
             isSubmitting = true;
             statusMessage = null;
 
-            post.UserId = CurrentUserId;
+            if (CurrentUserId is null)
+            {
+                statusMessage = "You must be logged in to create a post.";
+                return;
+            }
+
+            post.UserId = CurrentUserId.Value;
             post.Timestamp = DateTime.UtcNow;
 
             post.FishId = selectedFishId;
@@ -215,35 +252,43 @@
         {
             isSubmitting = false;
         }
+       
     }
 
 
-    private async Task DeleteAsync(Post p)
+    private async Task DeletePostAsync(Post p)
     {
-        if (p is null) return;
+        if (p is null || CurrentUserId is null)
+        {
+            statusMessage = "You must be logged in to delete posts.";
+            return;
+        }
+        if (p.UserId != CurrentUserId.Value)
+        {
+            statusMessage = "You can only delete your own posts.";
+            return;
+        }
+
+        await PostRepository.DeleteAsync(p.PostId, CurrentUserId.Value);
+        posts.Remove(p);
 
         try
         {
-            // Load tracked entity from DB (safer when items were fetched AsNoTracking)
-            var existing = await PostRepository.GetByIdAsync(p.PostId);
-            if (existing is null)
+            if (p.UserId != CurrentUserId.Value)
             {
-                statusMessage = "Post not found in database.";
+                statusMessage = "You can only delete your own posts.";
                 return;
             }
 
-            await PostRepository.DeleteAsync(existing);
-            await PostRepository.SaveChangesAsync();
-
-            // remove from local list shown in UI
+            await PostRepository.DeleteAsync(p.PostId, CurrentUserId.Value);
             posts.Remove(p);
 
             statusMessage = "Post deleted.";
         }
         catch (Exception ex)
         {
-            // keep UI informative; log exception if you have a logger
             statusMessage = $"Failed to delete post: {ex.Message}";
         }
     }
+
 }

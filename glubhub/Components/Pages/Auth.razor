@@ -1,0 +1,42 @@
+﻿@* @page "/auth"
+
+@using Microsoft.AspNetCore.Authorization
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@attribute [Authorize]
+
+<PageTitle>Authentication Required</PageTitle>
+
+<h1>You are authenticated</h1>
+
+<AuthorizeView> 
+    Hello @context.User.Identity?.Name!
+</AuthorizeView>
+
+@code {
+
+    private Guid? CurrentUserId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var idString = user.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value;
+            if (Guid.TryParse(idString, out var id))
+                CurrentUserId = id;
+        }
+
+        // if not logged in, CurrentUserId stays null
+
+        posts = CurrentUserId is not null
+            ? (await PostRepository.GetByUserAsync(CurrentUserId.Value)).ToList()
+            : new List<Post>();
+    }
+
+
+}
+ *@

@@ -18,11 +18,19 @@ public class PostRepository<T> : IPostRepository<T> where T : Post
         await _dbSet.AddAsync(entity);
     }
 
-    public async Task DeleteAsync(T entity)
+    public async Task DeleteAsync(int postId, Guid currentUserId)
     {
-        _dbSet.Remove(entity);
-        await Task.CompletedTask;
+        var post = await _dbSet.FirstOrDefaultAsync(
+            p => p.PostId == postId && p.UserId == currentUserId);
+
+        if (post is null)
+            return; // not found or not owned by this user
+
+        _dbSet.Remove(post);
+        await _context.SaveChangesAsync();
     }
+
+
 
     public async Task<IEnumerable<T>> GetAllAsync()
     {
