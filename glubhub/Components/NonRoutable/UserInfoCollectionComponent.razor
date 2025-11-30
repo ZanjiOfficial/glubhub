@@ -34,7 +34,8 @@
 
     private UserInfo userInfo = new UserInfo();
 
-    EventCallback<string> OnUserInfoSaved { get; set; }
+    [Parameter]
+    public EventCallback<string> OnUserInfoSaved { get; set; }
 
     class UserInfo()
     {

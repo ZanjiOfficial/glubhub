@@ -12,7 +12,7 @@
 @if (string.IsNullOrEmpty(userName))
 {
     <p>Indtast venligst dit brugernavn for at modtage beskeder.</p>
-    <UserInfoCollectionComponent OnUserSavedInfoSaved="OnUserInfoProvided"/>
+    <UserInfoCollectionComponent OnUserInfoSaved="OnUserInfoProvided"/>
 }
 else
 {
@@ -71,7 +71,7 @@ else
         if (!string.IsNullOrEmpty(message))
         {
             systemMessages.Add(message);
-            StateHasChanged(); //ikke nødvendigt, men hvis vi ændre rendermode til noget andet end InteractiveServer.
+            //StateHasChanged(); //ikke nødvendigt, men hvis vi ændre rendermode til noget andet end InteractiveServer.
         }
     }
 

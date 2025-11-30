@@ -11,7 +11,8 @@ namespace ChatHub
             userName= Context.GetHttpContext()?.Request.Query["userName"];
             userId = Context.GetHttpContext()?.Request.Query["userId"];
             Console.WriteLine("A client connected: " + Context.ConnectionId);   
-
+            Console.WriteLine("Brugernavn: " + userName);
+            Console.WriteLine("BrugerId: " + userId);
 
             await Clients.Caller.SendAsync("ReceiveSystemMessage", "Du har forbindelse!");
         }
