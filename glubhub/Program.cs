@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.AspNetCore.ResponseCompression;
-using glubhub.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace glubhub
 {
@@ -30,7 +30,20 @@ namespace glubhub
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            builder.Services.AddSignalR();
+            builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+
+            builder.Services.Configure<HubOptions>(options =>
+            {
+                options.EnableDetailedErrors = true;
+                options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+                options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+            });
+
             builder.Services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
@@ -43,7 +56,7 @@ namespace glubhub
 
             builder.Services.AddScoped<IdentityRedirectManager>();
 
-            builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+            
 
             builder.Services.AddAuthentication(options =>
                 {
@@ -58,6 +71,7 @@ namespace glubhub
                 .AddDefaultTokenProviders();
 
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
 
             builder.Services.AddAuthorizationCore();
             builder.Services.AddAuthentication();
@@ -80,26 +94,30 @@ namespace glubhub
             builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
 
-
+            builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
             var app = builder.Build();
 
-
-            // Configure the HTTP request pipeline.
+            
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error", createScopeForErrors: true);
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             app.UseResponseCompression();
-            app.MapHub<ChatHub>("/chathub");
             app.UseHttpsRedirection();
-
             app.UseStaticFiles();
+
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
             app.UseAntiforgery();
-            app.MapAdditionalIdentityEndpoints(); ;
+            app.MapAdditionalIdentityEndpoints();
+
+
+
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
 
