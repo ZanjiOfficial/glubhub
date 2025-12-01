@@ -4,6 +4,7 @@
 @inject IFishRepository<Fish> FishRepository
 @inject ITechniqueRepository<Technique> TechniqueRepository
 @inject ITipsRepository<Tips> TipsRepository
+@inject IPictureRepository<Picture> PictureRepository
 @inject AuthenticationStateProvider AuthProv
 @using Microsoft.AspNetCore.Authorization
 
@@ -39,34 +40,38 @@
                        placeholder="Tell us about the catch..." />
     </div>
 
+        <div class="mb-2">
+            <InputFile OnChange="OnImageSelected" />
+        </div>
+
     <!-- fishing-specific fields -->
-    <InputSelect class="form-select mb-1" @bind-Value="selectedFishId">
-        <option value="">Fish species</option>
-        @foreach (var f in fishes)
-        {
-            <option value="@f.FishId">@f.Species</option>
-        }
-    </InputSelect>
+        <InputSelect class="form-select mb-1" @bind-Value="selectedFishId">
+            <option value="">Fish species</option>
+            @foreach (var f in fishes)
+            {
+                <option value="@f.FishId">@f.Species</option>
+            }
+        </InputSelect>
 
-    <InputSelect class="form-select mb-1" @bind-Value="selectedGearId">
-        <option value="">Gear</option>
-        @foreach (var g in gears)
-        {
-            <option value="@g.GearId">@g.Category</option>
-        }
-    </InputSelect>
+        <InputSelect class="form-select mb-1" @bind-Value="selectedGearId">
+            <option value="">Gear</option>
+            @foreach (var g in gears)
+            {
+                <option value="@g.GearId">@g.Category</option>
+            }
+        </InputSelect>
 
-    <InputSelect class="form-select mb-1" @bind-Value="selectedTechniqueId">
-        <option value="">Technique</option>
-        @foreach (var t in techniques)
-        {
-            <option value="@t.TechniqueId">@t.Name</option>
-        }
-    </InputSelect>
+        <InputSelect class="form-select mb-1" @bind-Value="selectedTechniqueId">
+            <option value="">Technique</option>
+            @foreach (var t in techniques)
+            {
+                <option value="@t.TechniqueId">@t.Name</option>
+            }
+        </InputSelect>
 
-    <InputTextArea class="form-control mb-2"
-                   @bind-Value="tipsText"
-                   placeholder="Tips for other anglers" />
+        <InputTextArea class="form-control mb-2"
+                       @bind-Value="tipsText"
+                       placeholder="Tips for other anglers" />
 
     <button class="btn btn-primary" disabled="@isSubmitting">
         @(isSubmitting ? "Posting..." : "Post")
@@ -110,9 +115,12 @@ else
                     </div>
 
                     <p class="mt-2 mb-2">@p.Content</p>
+                    @if (p.Picture is not null)
+                    {
+                        <img src="@p.Picture.Link" class="img-fluid mt-2 rounded" />
+                    }
 
-                    @* optional fishing details *@
-                    @if (p.Fish is not null || p.Gear is not null || p.Technique is not null)
+                    @if (p.Fish is not null || p.Gear is not null || p.Technique is not null || p.Tips is not null)
                     {
                         <div class="small text-muted mb-2">
                             @if (p.Fish is not null)
@@ -126,6 +134,10 @@ else
                             @if (p.Technique is not null)
                             {
                                 <span> · Technique: @p.Technique.Name</span>
+                            }
+                            @if (p.Tips is not null)
+                            {
+                                <span> · Tips: @p.Tips.Text</span>
                             }
                         </div>
                     }
@@ -168,6 +180,12 @@ else
     private string? tipsText;
     private Guid? selectedTipsId;
     private Guid? CurrentUserId;
+    private IBrowserFile? imageFile;
+
+    private void OnImageSelected(InputFileChangeEventArgs e)
+    {
+        imageFile = e.File;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -188,6 +206,25 @@ else
 
         // Always just load all posts
         posts = (await PostRepository.GetAllAsync()).ToList();
+    }
+
+
+    private async Task<string?> SaveImageAsync()
+    {
+        if (imageFile is null)
+            return null;
+
+        var uploadsFolder = Path.Combine("wwwroot", "uploads");
+        Directory.CreateDirectory(uploadsFolder);
+
+        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(imageFile.Name)}";
+        var filePath = Path.Combine(uploadsFolder, fileName);
+
+        await using var stream = File.Create(filePath);
+        await imageFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024)
+                       .CopyToAsync(stream);
+
+        return $"/uploads/{fileName}";
     }
 
     private async Task CreatePostAsync()
@@ -223,10 +260,19 @@ else
 
             if (!string.IsNullOrWhiteSpace(tipsText))
             {
-                var tips = new Tips { Text = tipsText };
+                var tips = new Tips { Text = tipsText, Link = "", Type = "" };
                 await TipsRepository.AddSync(tips);
                 await TipsRepository.SaveChangesAsync();
                 post.TipsId = tips.TipsId;
+            }
+
+            var imageUrl = await SaveImageAsync();
+            if (!string.IsNullOrEmpty(imageUrl))
+            {
+                var picture = new Picture { Link = imageUrl };
+                await PictureRepository.AddSync(picture);
+                await PictureRepository.SaveChangesAsync();
+                post.PictureId = picture.PictureId;
             }
 
             await PostRepository.AddAsync(post);
