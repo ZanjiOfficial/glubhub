@@ -30,11 +30,18 @@ public class PostRepository<T> : IPostRepository<T> where T : Post
         await _context.SaveChangesAsync();
     }
 
-
-
     public async Task<IEnumerable<T>> GetAllAsync()
     {
-        return await _dbSet.AsNoTracking().ToListAsync();
+        return await _dbSet
+            .Include(p => p.Location)
+            .Include(p => p.Fish)
+            .Include(p => p.Gear)
+            .Include(p => p.Technique)
+            .Include(p => p.Tips)
+            .Include(p => p.Picture)
+            .OrderByDescending(p => p.Timestamp)
+            .ToListAsync();
+
     }
 
     public async Task<T?> GetByIdAsync(int id)
