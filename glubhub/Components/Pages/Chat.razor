@@ -2,21 +2,19 @@
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.Authorization
-@using glubhub.Models
-@using glubhub.Persistent.Interfaces
-
+@using ChatContracts
+@attribute [Authorize]
 
 <PageTitle>Fiskebeskeder</PageTitle>
 
-@if (string.IsNullOrEmpty(userName))
+@if (string.IsNullOrEmpty(userEmail))
 {
-    <p>Indtast venligst dit brugernavn for at modtage beskeder.</p>
-    <UserInfoCollectionComponent OnUserInfoSaved="OnUserInfoProvided"/>
+    <p>Henter brugeroplysninger...</p>
+    <UserInfoCollectionComponent OnUserInfoSaved="OnUserInfoProvided" />
 }
 else
 {
-    <h3>Velkommen, @userName!</h3>
+    <h3>Velkommen, @userEmail!</h3>
     @if (systemMessages.Count == 0)
     {
         <p>Der er ingen beskeder.</p>
@@ -32,49 +30,42 @@ else
     }
 }
 
-
-
-
-
-
 @code {
+    private readonly List<string> systemMessages = new();
+    private string userEmail = string.Empty;
+    private string? userID;
+    private HubConnection? hubConnection;
 
-    private List<string> systemMessages = new List<string>();
-    private string userName = string.Empty;
-    private string userID = string.Empty;
-
-    private async Task OnUserInfoProvided(string userName)
+    // No auth-state logic here; all user info comes from DbContext via the child component
+    private async Task OnUserInfoProvided(ConnectedUser info)
     {
-        this.userName = userName;
-        this.userID = Guid.NewGuid().ToString();
-        await ConnectToServer(userID, userName);
-    }
+        userID = info.UserId;
+        userEmail = info.Email;
 
+        if (!string.IsNullOrWhiteSpace(userID) && !string.IsNullOrWhiteSpace(userEmail))
+        {
+            await ConnectToServer(userID, userEmail);
+        }
+    }
 
     private async Task ConnectToServer(string userId, string userName)
     {
-    
-        var hubconnection = new HubConnectionBuilder()
-           .WithUrl($"https://localhost:7076/chathub?userid={userId}&username={userName}")
-           .WithAutomaticReconnect()
-           .Build();
+        // Keep a reference to the connection
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl($"https://localhost:7076/chathub?userid={userId}&username={userName}")
+            .WithAutomaticReconnect()
+            .Build();
 
-        hubconnection.On<string>("ReceiveSystemMessage", RecieveSystemMessage);
+        hubConnection.On<string>("ReceiveSystemMessage", RecieveSystemMessage);
 
-        await hubconnection.StartAsync();
-    
+        await hubConnection.StartAsync();
     }
-
 
     private void RecieveSystemMessage(string message)
     {
         if (!string.IsNullOrEmpty(message))
         {
             systemMessages.Add(message);
-            //StateHasChanged(); //ikke nødvendigt, men hvis vi ændre rendermode til noget andet end InteractiveServer.
         }
     }
-
 }
-
-

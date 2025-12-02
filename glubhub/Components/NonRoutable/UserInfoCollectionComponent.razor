@@ -1,6 +1,15 @@
-﻿<h3>UserInfoCollectionComponent</h3>
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using ChatContracts
+@using System.Security.Claims
+@using glubhub.Data
 
-@if (userInfo != null)
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ApplicationDbContext Db
+
+<h3>UserInfoCollectionComponent</h3>
+
+@* @if (userInfo != null)
 {
      <EditForm Model="userInfo" OnValidSubmit="SaveUserInfo">
         <DataAnnotationsValidator />
@@ -28,23 +37,50 @@
 
      </EditForm>
 }
-
+ *@
 
 @code {
 
-    private UserInfo userInfo = new UserInfo();
+    [Parameter] public EventCallback<ConnectedUser> OnUserInfoSaved { get; set; }
 
-    [Parameter]
-    public EventCallback<string> OnUserInfoSaved { get; set; }
-
-    class UserInfo()
+    protected override async Task OnInitializedAsync()
     {
-        public string? UserName { get; set; } = string.Empty;
-    }
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var principal = state.User;
 
-    private async Task SaveUserInfo()
-    {
-        await OnUserInfoSaved.InvokeAsync(userInfo.UserName);
+        if (principal?.Identity?.IsAuthenticated != true)
+        {
+            return;
+        }
+
+        var email =
+            principal.FindFirst(ClaimTypes.Email)?.Value
+            ?? principal.FindFirst("email")?.Value
+            ?? principal.FindFirst("emails")?.Value // AAD sometimes uses "emails"
+            ?? string.Empty;
+
+        if (string.IsNullOrEmpty(email))
+        {
+            email = "Unknown";
+        }
+
+        var normalized = email.ToUpperInvariant();
+
+
+        var userEntity = await Db.Users.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.NormalizedEmail == normalized);
+        
+        if (userEntity is null)
+            return;
+
+        var info = new ConnectedUser
+        {
+            UserId = userEntity.Id,
+            Email = userEntity.Email ?? email
+        };
+
+        await OnUserInfoSaved.InvokeAsync(info);
+
     }
 }
 
