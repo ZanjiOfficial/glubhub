@@ -3,8 +3,10 @@
     public class Post
     {
         public string? Comment { get; set; } = "";
+        public string? TechniqueTags { get; set; } = "";
+        public string? GearTags { get; set; } = "";
         public Location? Location { get; set; }
-        public string? Content { get; set; }= "";
+        public string? Content { get; set; } = "";
         public int PostId { get; set; }
         public Guid UserId { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;

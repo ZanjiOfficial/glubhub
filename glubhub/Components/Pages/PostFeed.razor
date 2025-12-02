@@ -1,91 +1,147 @@
 ﻿@using glubhub.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+
 @inject IPostRepository<Post> PostRepository
-@inject IGearRepository<Gear> GearRepository
 @inject IFishRepository<Fish> FishRepository
-@inject ITechniqueRepository<Technique> TechniqueRepository
 @inject ITipsRepository<Tips> TipsRepository
 @inject IPictureRepository<Picture> PictureRepository
-@inject AuthenticationStateProvider AuthProv
-@using Microsoft.AspNetCore.Authorization
-
-@attribute [Authorize]
+@inject AuthenticationStateProvider AuthStateProvider
 
 <h4>Share your latest catch</h4>
 
 @if (CurrentUserId is not null)
 {
-<EditForm Model="@post" OnValidSubmit="@CreatePostAsync">
-    <div class="mb-1">
-        <InputText class="form-control"
-                   @bind-Value="post.Comment"
-                   placeholder="Short title or comment" />
-    </div>
-
-    <div class="row g-1 mb-1">
-        <div class="col">
+    <EditForm Model="@post" OnValidSubmit="@CreatePostAsync">
+        <div class="mb-1">
             <InputText class="form-control"
-                       @bind-Value="post.Location.City"
-                       placeholder="City" />
+                       @bind-Value="post.Comment"
+                       placeholder="Short title or comment" />
         </div>
-        <div class="col">
-            <InputText class="form-control"
-                       @bind-Value="post.Location.Region"
-                       placeholder="Region" />
-        </div>
-    </div>
 
-    <div class="mb-2">
-        <InputTextArea class="form-control"
-                       @bind-Value="post.Content"
-                       placeholder="Tell us about the catch..." />
-    </div>
+        <div class="row g-1 mb-1">
+            <div class="col">
+                <InputText class="form-control"
+                           @bind-Value="post.Location.City"
+                           placeholder="City" />
+            </div>
+            <div class="col">
+                <InputText class="form-control"
+                           @bind-Value="post.Location.Region"
+                           placeholder="Region" />
+            </div>
+        </div>
+
+        <div class="mb-2">
+            <InputTextArea class="form-control"
+                           @bind-Value="post.Content"
+                           placeholder="Tell us about the catch..." />
+        </div>
 
         <div class="mb-2">
             <InputFile OnChange="OnImageSelected" />
         </div>
 
-    <!-- fishing-specific fields -->
-        <InputSelect class="form-select mb-1" @bind-Value="selectedFishId">
-            <option value="">Fish species</option>
-            @foreach (var f in fishes)
-            {
-                <option value="@f.FishId">@f.Species</option>
-            }
-        </InputSelect>
+        <div class="card mb-2 border-0 bg-light">
+            <div class="card-body py-2">
+                <div class="fw-semibold small mb-2">Catch details</div>
 
-        <InputSelect class="form-select mb-1" @bind-Value="selectedGearId">
-            <option value="">Gear</option>
-            @foreach (var g in gears)
-            {
-                <option value="@g.GearId">@g.Category</option>
-            }
-        </InputSelect>
+                <div class="row g-1 mb-2">
+                    <div class="col-6">
+                        <InputText class="form-control form-control-sm"
+                                   @bind-Value="fishSpecies"
+                                   placeholder="Species (e.g. Pike)" />
+                    </div>
+                    <div class="col-3">
+                        <InputNumber TValue="int?" class="form-control form-control-sm"
+                                     @bind-Value="fishLength"
+                                     placeholder="cm" />
+                    </div>
+                    <div class="col-3">
+                        <InputNumber TValue="double?" class="form-control form-control-sm"
+                                     @bind-Value="fishWeight"
+                                     placeholder="kg" />
+                    </div>
+                </div>
 
-        <InputSelect class="form-select mb-1" @bind-Value="selectedTechniqueId">
-            <option value="">Technique</option>
-            @foreach (var t in techniques)
-            {
-                <option value="@t.TechniqueId">@t.Name</option>
-            }
-        </InputSelect>
+                <div class="mb-2">
+                    <label class="form-label">Techniques</label>
+                    <div class="d-flex">
+                        <InputText class="form-control form-control-sm"
+                                   @bind-Value="newTechnique"
+                                   placeholder="Add technique" />
+                        <button type="button"
+                                class="btn btn-sm btn-outline-primary ms-2"
+                                @onclick="AddTechniqueTag">
+                            Add
+                        </button>
+                    </div>
+                    <div class="mt-1">
+                        @foreach (var t in techniqueTags)
+                        {
+                            <span class="badge bg-info me-1">
+                                @t
+                                <button type="button"
+                                        class="btn-close btn-close-white btn-sm ms-1"
+                                        @onclick="() => RemoveTechniqueTag(t)"
+                                        aria-label="Remove">
+                                </button>
+                            </span>
+                        }
+                    </div>
+                </div>
 
-        <InputTextArea class="form-control mb-2"
-                       @bind-Value="tipsText"
-                       placeholder="Tips for other anglers" />
+                <div class="mb-2">
+                    <label class="form-label">Gear</label>
+                    <div class="d-flex">
+                        <InputText class="form-control form-control-sm"
+                                   @bind-Value="newGear"
+                                   placeholder="Add gear" />
+                        <button type="button"
+                                class="btn btn-sm btn-outline-primary ms-2"
+                                @onclick="AddGearTag">
+                            Add
+                        </button>
+                    </div>
+                    <div class="mt-1">
+                        @foreach (var g in gearTags)
+                        {
+                            <span class="badge bg-success me-1">
+                                @g
+                                <button type="button"
+                                        class="btn-close btn-close-white btn-sm ms-1"
+                                        @onclick="() => RemoveGearTag(g)"
+                                        aria-label="Remove">
+                                </button>
+                            </span>
+                        }
+                    </div>
+                </div>
 
-    <button class="btn btn-primary" disabled="@isSubmitting">
-        @(isSubmitting ? "Posting..." : "Post")
-    </button>
+                <InputTextArea class="form-control form-control-sm"
+                               @bind-Value="tipsText"
+                               placeholder="Tips for other anglers" />
+            </div>
+        </div>
+
+        <button class="btn btn-primary" disabled="@isSubmitting">
+            @(isSubmitting ? "Posting..." : "Post")
+        </button>
     </EditForm>
 }
 else
 {
     <p class="text-muted small">
-        Log in to share your latest catch. You can still browse all posts.
+        Log in to share your own catch. You can still browse all posts.
     </p>
 }
 
-<p class="text-success">@statusMessage</p>
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <p class="text-success">@statusMessage</p>
+}
+
+<hr class="mt-0 mb-3" />
 
 @foreach (var p in posts)
 {
@@ -115,29 +171,45 @@ else
                     </div>
 
                     <p class="mt-2 mb-2">@p.Content</p>
+
                     @if (p.Picture is not null)
                     {
                         <img src="@p.Picture.Link" class="img-fluid mt-2 rounded" />
                     }
 
-                    @if (p.Fish is not null || p.Gear is not null || p.Technique is not null || p.Tips is not null)
+                    @if (p.Fish is not null || p.Tips is not null)
                     {
                         <div class="small text-muted mb-2">
                             @if (p.Fish is not null)
                             {
-                                <span>Fish: @p.Fish.Species</span>
-                            }
-                            @if (p.Gear is not null)
-                            {
-                                <span> · Gear: @p.Gear.Category</span>
-                            }
-                            @if (p.Technique is not null)
-                            {
-                                <span> · Technique: @p.Technique.Name</span>
+                                <div>
+                                    Fish: @p.Fish.Species (@p.Fish.Length cm, @p.Fish.Weight kg)
+                                </div>
                             }
                             @if (p.Tips is not null)
                             {
-                                <span> · Tips: @p.Tips.Text</span>
+                                <div>Tips: @p.Tips.Text</div>
+                            }
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(p.TechniqueTags))
+                    {
+                        <div class="mb-1">
+                            @foreach (var tag in p.TechniqueTags.Split(",", 
+                    StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                <span class="badge bg-info me-1">@tag</span>
+                            }
+                        </div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(p.GearTags))
+                    {
+                        <div class="mb-2">
+                            @foreach (var tag in p.GearTags.Split(",", 
+                    StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                <span class="badge bg-success me-1">@tag</span>
                             }
                         </div>
                     }
@@ -171,26 +243,26 @@ else
     private List<Post> posts = new();
     private bool isSubmitting;
     private string? statusMessage;
-    private List<Fish> fishes = new();
-    private List<Gear> gears = new();
-    private List<Technique> techniques = new();
-    private int? selectedFishId;
-    private int? selectedGearId;
-    private int? selectedTechniqueId;
-    private string? tipsText;
-    private Guid? selectedTipsId;
-    private Guid? CurrentUserId;
-    private IBrowserFile? imageFile;
 
-    private void OnImageSelected(InputFileChangeEventArgs e)
-    {
-        imageFile = e.File;
-    }
+    private string? fishSpecies;
+    private int? fishLength;
+    private double? fishWeight;
+
+    private string? newTechnique;
+    private string? newGear;
+    private List<string> techniqueTags = new();
+    private List<string> gearTags = new();
+    private string? tipsText;
+    private int? selectedPostId;
+    private Post? selectedPost;
+    private List<Post> selectedComments = new();
+
+    private IBrowserFile? imageFile;
+    private Guid? CurrentUserId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        // look for if anyone is logged in
-        var authState = await AuthProv.GetAuthenticationStateAsync();
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
         if (user.Identity?.IsAuthenticated == true)
@@ -199,15 +271,15 @@ else
             if (Guid.TryParse(idString, out var id))
                 CurrentUserId = id;
         }
-        else
-        {
-            CurrentUserId = null;
-        }
 
-        // Always just load all posts
+        // global feed
         posts = (await PostRepository.GetAllAsync()).ToList();
     }
 
+    private void OnImageSelected(InputFileChangeEventArgs e)
+    {
+        imageFile = e.File;
+    }
 
     private async Task<string?> SaveImageAsync()
     {
@@ -227,6 +299,34 @@ else
         return $"/uploads/{fileName}";
     }
 
+    private void AddTechniqueTag()
+    {
+        if (!string.IsNullOrWhiteSpace(newTechnique) && !techniqueTags.Contains(newTechnique))
+        {
+            techniqueTags.Add(newTechnique.Trim());
+            newTechnique = string.Empty;
+        }
+    }
+
+    private void RemoveTechniqueTag(string val)
+    {
+        techniqueTags.Remove(val);
+    }
+
+    private void AddGearTag()
+    {
+        if (!string.IsNullOrWhiteSpace(newGear) && !gearTags.Contains(newGear))
+        {
+            gearTags.Add(newGear.Trim());
+            newGear = string.Empty;
+        }
+    }
+
+    private void RemoveGearTag(string val)
+    {
+        gearTags.Remove(val);
+    }
+
     private async Task CreatePostAsync()
     {
         if (CurrentUserId is null)
@@ -234,6 +334,7 @@ else
             statusMessage = "You must be logged in to create a post.";
             return;
         }
+
         try
         {
             if (string.IsNullOrWhiteSpace(post.Content))
@@ -245,19 +346,31 @@ else
             isSubmitting = true;
             statusMessage = null;
 
-            if (CurrentUserId is null)
-            {
-                statusMessage = "You must be logged in to create a post.";
-                return;
-            }
-
             post.UserId = CurrentUserId.Value;
             post.Timestamp = DateTime.UtcNow;
 
-            post.FishId = selectedFishId;
-            post.GearId = selectedGearId;
-            post.TechniqueId = selectedTechniqueId;
+            // Fish
+            if (!string.IsNullOrWhiteSpace(fishSpecies) ||
+                fishLength is not null ||
+                fishWeight is not null)
+            {
+                var fish = new Fish
+                {
+                    Species = fishSpecies ?? "",
+                    Length = fishLength ?? 0,
+                    Weight = fishWeight ?? 0
+                };
 
+                await FishRepository.AddSync(fish);
+                await FishRepository.SaveChangesAsync();
+                post.FishId = fish.FishId;
+            }
+
+            // Tags as comma-separated strings
+            post.TechniqueTags = string.Join(",", techniqueTags);
+            post.GearTags = string.Join(",", gearTags);
+
+            // Tips
             if (!string.IsNullOrWhiteSpace(tipsText))
             {
                 var tips = new Tips { Text = tipsText, Link = "", Type = "" };
@@ -266,6 +379,7 @@ else
                 post.TipsId = tips.TipsId;
             }
 
+            // Picture
             var imageUrl = await SaveImageAsync();
             if (!string.IsNullOrEmpty(imageUrl))
             {
@@ -279,14 +393,21 @@ else
             await PostRepository.SaveChangesAsync();
 
             posts.Insert(0, post);
+
+            // reset
             post = new Post
             {
                 Location = new Location("", "", "", SpotType.Lake, 0, 0, 0)
             };
-            selectedFishId = null;
-            selectedGearId = null;
-            selectedTechniqueId = null;
+            fishSpecies = null;
+            fishLength = null;
+            fishWeight = null;
+            techniqueTags.Clear();
+            gearTags.Clear();
+            newTechnique = null;
+            newGear = null;
             tipsText = null;
+            imageFile = null;
 
             statusMessage = "Post created!";
         }
@@ -298,9 +419,7 @@ else
         {
             isSubmitting = false;
         }
-       
     }
-
 
     private async Task DeletePostAsync(Post p)
     {
@@ -309,14 +428,6 @@ else
             statusMessage = "You must be logged in to delete posts.";
             return;
         }
-        if (p.UserId != CurrentUserId.Value)
-        {
-            statusMessage = "You can only delete your own posts.";
-            return;
-        }
-
-        await PostRepository.DeleteAsync(p.PostId, CurrentUserId.Value);
-        posts.Remove(p);
 
         try
         {
@@ -335,13 +446,8 @@ else
         {
             statusMessage = $"Failed to delete post: {ex.Message}";
         }
-
     }
-    
-
-
-
-
-
-
 }
+
+
+

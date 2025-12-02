@@ -450,6 +450,9 @@ namespace glubhub.Migrations
                     b.Property<int?>("GearId")
                         .HasColumnType("int");
 
+                    b.Property<string>("GearTags")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("LocationId")
                         .HasColumnType("int");
 
@@ -458,6 +461,9 @@ namespace glubhub.Migrations
 
                     b.Property<int?>("TechniqueId")
                         .HasColumnType("int");
+
+                    b.Property<string>("TechniqueTags")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
@@ -542,7 +548,6 @@ namespace glubhub.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TipsId"));
 
                     b.Property<string>("Link")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 

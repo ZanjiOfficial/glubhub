@@ -12,7 +12,7 @@ using glubhub.Data;
 namespace glubhub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251126124349_InitialCreate")]
+    [Migration("20251201115251_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -439,7 +439,6 @@ namespace glubhub.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PostId"));
 
                     b.Property<string>("Comment")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -448,12 +447,43 @@ namespace glubhub.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<int>("LocationId")
+                    b.Property<int?>("FishId")
                         .HasColumnType("int");
+
+                    b.Property<int?>("GearId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PictureId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TechniqueId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("TipsId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("PostId");
 
+                    b.HasIndex("FishId");
+
+                    b.HasIndex("GearId");
+
                     b.HasIndex("LocationId");
+
+                    b.HasIndex("PictureId");
+
+                    b.HasIndex("TechniqueId");
+
+                    b.HasIndex("TipsId");
 
                     b.ToTable("Posts");
                 });
@@ -515,7 +545,6 @@ namespace glubhub.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TipsId"));
 
                     b.Property<string>("Link")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -636,13 +665,41 @@ namespace glubhub.Migrations
 
             modelBuilder.Entity("glubhub.Models.Post", b =>
                 {
+                    b.HasOne("glubhub.Models.Fish", "Fish")
+                        .WithMany()
+                        .HasForeignKey("FishId");
+
+                    b.HasOne("glubhub.Models.Gear", "Gear")
+                        .WithMany()
+                        .HasForeignKey("GearId");
+
                     b.HasOne("glubhub.Models.Location", "Location")
                         .WithMany()
-                        .HasForeignKey("LocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("LocationId");
+
+                    b.HasOne("glubhub.Models.Picture", "Picture")
+                        .WithMany()
+                        .HasForeignKey("PictureId");
+
+                    b.HasOne("glubhub.Models.Technique", "Technique")
+                        .WithMany()
+                        .HasForeignKey("TechniqueId");
+
+                    b.HasOne("glubhub.Models.Tips", "Tips")
+                        .WithMany()
+                        .HasForeignKey("TipsId");
+
+                    b.Navigation("Fish");
+
+                    b.Navigation("Gear");
 
                     b.Navigation("Location");
+
+                    b.Navigation("Picture");
+
+                    b.Navigation("Technique");
+
+                    b.Navigation("Tips");
                 });
 #pragma warning restore 612, 618
         }
