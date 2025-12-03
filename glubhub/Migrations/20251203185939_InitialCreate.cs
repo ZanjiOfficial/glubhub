@@ -360,16 +360,22 @@ namespace glubhub.Migrations
                 {
                     PostId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Comment = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    LocationId = table.Column<int>(type: "int", nullable: true),
-                    Content = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LocationId = table.Column<int>(type: "int", nullable: true),
                     FishId = table.Column<int>(type: "int", nullable: true),
-                    GearId = table.Column<int>(type: "int", nullable: true),
-                    TechniqueId = table.Column<int>(type: "int", nullable: true),
+                    GearId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GearId1 = table.Column<int>(type: "int", nullable: false),
                     TipsId = table.Column<int>(type: "int", nullable: true),
-                    PictureId = table.Column<int>(type: "int", nullable: true)
+                    PictureId = table.Column<int>(type: "int", nullable: true),
+                    TechniqueId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TechniqueId1 = table.Column<int>(type: "int", nullable: true),
+                    TechniqueTags = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GearTags = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsLikedByCurrentUser = table.Column<bool>(type: "bit", nullable: false),
+                    LikeCount = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -380,10 +386,11 @@ namespace glubhub.Migrations
                         principalTable: "Fish",
                         principalColumn: "FishId");
                     table.ForeignKey(
-                        name: "FK_Posts_Gear_GearId",
-                        column: x => x.GearId,
+                        name: "FK_Posts_Gear_GearId1",
+                        column: x => x.GearId1,
                         principalTable: "Gear",
-                        principalColumn: "GearId");
+                        principalColumn: "GearId",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Posts_Locations_LocationId",
                         column: x => x.LocationId,
@@ -395,8 +402,8 @@ namespace glubhub.Migrations
                         principalTable: "Pictures",
                         principalColumn: "PictureId");
                     table.ForeignKey(
-                        name: "FK_Posts_Techniques_TechniqueId",
-                        column: x => x.TechniqueId,
+                        name: "FK_Posts_Techniques_TechniqueId1",
+                        column: x => x.TechniqueId1,
                         principalTable: "Techniques",
                         principalColumn: "TechniqueId");
                     table.ForeignKey(
@@ -404,6 +411,60 @@ namespace glubhub.Migrations
                         column: x => x.TipsId,
                         principalTable: "Tips",
                         principalColumn: "TipsId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Comments",
+                columns: table => new
+                {
+                    CommentsId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PostId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId1 = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PostId1 = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Comments", x => x.CommentsId);
+                    table.ForeignKey(
+                        name: "FK_Comments_AspNetUsers_UserId1",
+                        column: x => x.UserId1,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Comments_Posts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "Posts",
+                        principalColumn: "PostId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Comments_Posts_PostId1",
+                        column: x => x.PostId1,
+                        principalTable: "Posts",
+                        principalColumn: "PostId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Likes",
+                columns: table => new
+                {
+                    LikeId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PostId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Likes", x => x.LikeId);
+                    table.ForeignKey(
+                        name: "FK_Likes_Posts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "Posts",
+                        principalColumn: "PostId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -451,9 +512,31 @@ namespace glubhub.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Comments_PostId",
+                table: "Comments",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_PostId1",
+                table: "Comments",
+                column: "PostId1",
+                unique: true,
+                filter: "[PostId1] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_UserId1",
+                table: "Comments",
+                column: "UserId1");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_GroupMembers_MembersId",
                 table: "GroupMembers",
                 column: "MembersId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Likes_PostId",
+                table: "Likes",
+                column: "PostId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Messages_RecipientId",
@@ -471,9 +554,9 @@ namespace glubhub.Migrations
                 column: "FishId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Posts_GearId",
+                name: "IX_Posts_GearId1",
                 table: "Posts",
-                column: "GearId");
+                column: "GearId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Posts_LocationId",
@@ -486,9 +569,9 @@ namespace glubhub.Migrations
                 column: "PictureId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Posts_TechniqueId",
+                name: "IX_Posts_TechniqueId1",
                 table: "Posts",
-                column: "TechniqueId");
+                column: "TechniqueId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Posts_TipsId",
@@ -518,13 +601,16 @@ namespace glubhub.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "Comments");
+
+            migrationBuilder.DropTable(
                 name: "GroupMembers");
 
             migrationBuilder.DropTable(
-                name: "Messages");
+                name: "Likes");
 
             migrationBuilder.DropTable(
-                name: "Posts");
+                name: "Messages");
 
             migrationBuilder.DropTable(
                 name: "Times");
@@ -534,6 +620,9 @@ namespace glubhub.Migrations
 
             migrationBuilder.DropTable(
                 name: "Groups");
+
+            migrationBuilder.DropTable(
+                name: "Posts");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

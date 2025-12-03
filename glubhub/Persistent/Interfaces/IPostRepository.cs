@@ -1,4 +1,5 @@
 ﻿using glubhub.Models;
+namespace glubhub.Persistent.Interfaces;
 
 public interface IPostRepository<T> where T : Post
 {
