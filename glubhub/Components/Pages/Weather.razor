@@ -1,64 +1,76 @@
-﻿@page "/weather"
-@attribute [StreamRendering]
+﻿@using glubhub.Models;
+@using System.Threading.Tasks;
+@using static glubhub.Models.Weather
 
-<PageTitle>Weather</PageTitle>
+@page "/weather"
+@inject WeatherService WeatherService
+@rendermode InteractiveServer
 
-<h1>Weather</h1>
+<h3>Weather</h3>
 
-<p>This component demonstrates showing data.</p>
+<input @bind="City" @bind:event="oninput" placeholder="Enter city..." />
+<button type="button" class="btn btn-primary" @onclick="@OnInitializedAsync">Get Weather</button>
 
-@if (forecasts == null)
+@if (!string.IsNullOrEmpty(ErrorMessage))
 {
-    <p><em>Loading...</em></p>
+    <div class="alert alert-danger mt-3">@ErrorMessage</div>
 }
-else
+
+@if (IsLoading)
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <p>Loader forecast…</p>
 }
+
+<h3 class="mt-5">5-Day Forecast</h3>
+
+<div class="row row-cols-1 row-cols-md-5 g-4 mt-2">
+    @if (!IsLoading && Forecast != null && Forecast.Any())
+    {
+        foreach (var day in Forecast)
+        {
+            <div class="col">
+                <div class="card h-100 text-center shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@DateTime.Parse(day.Date).ToString("ddd, MMM d")</h5>
+                        <img src="@day.IconUrl" alt="@day.IconPhrase" class="mb-2" />
+                        <p class="card-text">@day.IconPhrase</p>
+                        <p class="text-muted small">Min: @day.MinTemp</p>
+                        <p class="text-muted small">Max: @day.MaxTemp</p>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else if (!IsLoading && (Forecast == null || !Forecast.Any()))
+    {
+        <p>No forecast data available.</p>
+    }
+</div>
 
 @code {
-    private WeatherForecast[]? forecasts;
+    [Parameter]
+    public EventCallback OnWeatherLoaded { get; set; }
+
+
+    private List<ForecastDay> Forecast = new();
+    private string City = "Odense";
+    private bool IsLoading = false;
+    private string? ErrorMessage;
+
+    private async Task LoadWeather()
+    {
+        IsLoading = true;
+        ErrorMessage = null;
+        var (forecast, error) = await WeatherService.GetForecastAsync(City);
+        Forecast = forecast;
+        ErrorMessage = error;
+        IsLoading = false;
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        // Simulate asynchronous loading to demonstrate streaming rendering
-        await Task.Delay(500);
-
-        var startDate = DateOnly.FromDateTime(DateTime.Now);
-        var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
-        forecasts = Enumerable.Range(1, 5).Select(index => new WeatherForecast
-        {
-            Date = startDate.AddDays(index),
-            TemperatureC = Random.Shared.Next(-20, 55),
-            Summary = summaries[Random.Shared.Next(summaries.Length)]
-        }).ToArray();
+        await LoadWeather();
+        
     }
+} 
 
-    private class WeatherForecast
-    {
-        public DateOnly Date { get; set; }
-        public int TemperatureC { get; set; }
-        public string? Summary { get; set; }
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-    }
-}

@@ -1,7 +1,7 @@
-﻿using glubhub.Models;
-using glubhub.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using glubhub.Data;
+using glubhub.Models;
 using glubhub.Persistent.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace glubhub.Persistent.Repositories
 {
@@ -18,7 +18,7 @@ namespace glubhub.Persistent.Repositories
         }
 
 
-        public async Task AddSync(T entity)
+        public async Task AddAsync(T entity)
         {
             await _context.AddAsync(entity);
         }
@@ -33,7 +33,7 @@ namespace glubhub.Persistent.Repositories
             return await _dbSet.ToListAsync();
         }
 
-        public async Task<T> GetByIdAsync(int id)
+        public async Task<T?> GetByIdAsync(int id)
         {
             return await _dbSet.FindAsync(id);
         }

@@ -5,18 +5,16 @@ using glubhub.Persistent.Interfaces;
 
 namespace glubhub.Persistent.Repositories
 {
-    public class UserRepository<T> : IUserRepository<T> where T : User
+    public class UserRepository<T> : IUserRepository<T> where T : ApplicationUser
     {
         private readonly ApplicationDbContext _context;
         private readonly DbSet<T> _dbSet;
-
 
         public UserRepository(ApplicationDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();
         }
-
 
         public async Task AddSync(T entity)
         {
