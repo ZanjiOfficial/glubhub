@@ -1,11 +1,56 @@
 ﻿@page "/profil"
-<h3>Profile</h3>
+@using glubhub.Data
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApplicationDbContext Db
 
-@code {
+<h3>My posts</h3>
 
+@if (posts == null)
+{
+    <p>Loading profile...</p>
+}
+else if (!posts.any())
+{
+    <p>No posts found yet.</p>
+}
+else
+{
+    <ul>
+        @foreach (var post in posts)
+        {
+            <li>
+                <h4>@post.Title</h4>
+                <p>@post.Content</p>
+                <small>Posted on @post.CreatedAt.ToString("g")</small>
+            </li>
+        }
+    </ul>
 }
 
-<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+@code {
+    private List<Post>? posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            var userId = user.FindFirst(c => c.Type == "sub")?.Value;
+            posts = Db.Posts
+                .Where(p => p.UserId == userId)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToList();
+        }
+        else
+        {
+            posts = new List<Post>();
+        }
+    }
+}
+
+
+@* <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
 <div class="container">
     <div id="user-profile-2" class="user-profile">
         <div class="tabbable">
@@ -1029,4 +1074,4 @@
             </div>
         </div>
     </div>
-</div>
+</div> *@

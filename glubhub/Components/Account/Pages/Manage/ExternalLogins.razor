@@ -9,6 +9,7 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityUserAccessor UserAccessor
 @inject IUserStore<ApplicationUser> UserStore
+
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Manage your external logins</PageTitle>
@@ -68,6 +69,7 @@
     public const string LinkLoginCallbackAction = "LinkLoginCallback";
 
     private ApplicationUser user = default!;
+
     private IList<UserLoginInfo>? currentLogins;
     private IList<AuthenticationScheme>? otherLogins;
     private bool showRemoveButton;
@@ -93,7 +95,10 @@
             .ToList();
 
         string? passwordHash = null;
+
+        
         if (UserStore is IUserPasswordStore<ApplicationUser> userPasswordStore)
+
         {
             passwordHash = await userPasswordStore.GetPasswordHashAsync(user, HttpContext.RequestAborted);
         }

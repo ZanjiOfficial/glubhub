@@ -17,6 +17,7 @@ namespace glubhub.Components.Account
             emailSender.SendEmailAsync(email, "Reset your password", $"Please reset your password by <a href='{resetLink}'>clicking here</a>.");
 
         public Task SendPasswordResetCodeAsync(ApplicationUser user, string email, string resetCode) =>
+
             emailSender.SendEmailAsync(email, "Reset your password", $"Please reset your password using the following code: {resetCode}");
     }
 }

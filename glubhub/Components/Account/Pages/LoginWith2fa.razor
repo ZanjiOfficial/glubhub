@@ -7,6 +7,7 @@
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
+
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<LoginWith2fa> Logger
 
@@ -49,6 +50,7 @@
     private string? message;
     private ApplicationUser user = default!;
 
+
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
 
@@ -61,6 +63,7 @@
     protected override async Task OnInitializedAsync()
     {
         // Ensure the user has gone through the UserName & password screen first
+
         user = await SignInManager.GetTwoFactorAuthenticationUserAsync() ??
             throw new InvalidOperationException("Unable to load two-factor authentication user.");
     }
