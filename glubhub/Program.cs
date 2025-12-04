@@ -1,5 +1,14 @@
 ﻿using glubhub.Components;
+using glubhub.Components.Account;
+using glubhub.Data;
 using glubhub.Models;
+using glubhub.Persistent.Interfaces;
+using glubhub.Persistent.Repositories;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using MudBlazor.Services;
+using System.Runtime;
 using glubhub.Persistent.Repositories;
 using glubhub.Data;
 using glubhub.Persistent.Interfaces;
@@ -36,6 +45,20 @@ namespace glubhub
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     [ "application/octet-stream" ]);
             });
+
+builder.Services.AddScoped(typeof(IUserRepository<>), typeof(UserRepository<>));
+builder.Services.AddScoped(typeof(IFishRepository<>), typeof(FishRepository<>));
+builder.Services.AddScoped(typeof(IGearRepository<>), typeof(GearRepository<>));
+builder.Services.AddScoped(typeof(IGroupRepository<>), typeof(GroupRepository<>));
+builder.Services.AddScoped(typeof(ILocationRepository<>), typeof(LocationRepository<>));
+builder.Services.AddScoped(typeof(IMessageRepository<>), typeof(MessageRepository<>));
+builder.Services.AddScoped(typeof(IPictureRepository<>), typeof(PictureRepository<>));
+builder.Services.AddScoped(typeof(IPostRepository<>), typeof(PostRepository<>));
+builder.Services.AddScoped(typeof(ITechniqueRepository<>), typeof(TechniqueRepository<>));
+builder.Services.AddScoped(typeof(ITimeRepository<>), typeof(TimeRepository<>));
+builder.Services.AddScoped(typeof(ITipsRepository<>), typeof(TipsRepository<>));
+builder.Services.AddScoped(typeof(IWeatherRepository<>), typeof(WeatherRepository<>));
+builder.Services.AddMudServices();
 
             builder.Services.AddCascadingAuthenticationState();
 
