@@ -8,6 +8,7 @@
 @inject IPictureRepository<Picture> PictureRepository
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ICommentsRepository<Comments> CommentsRepository
+@inject ILikeRepository<Like> LikeRepository
 
 <h4>Share your latest catch</h4>
 
@@ -356,9 +357,25 @@ else
                 CurrentUserId = id;
         }
 
-        // global feed
         posts = (await PostRepository.GetAllAsync()).ToList();
+        var postIds = posts.Select(p => p.PostId).ToList();
+
+        // total likes for counts
+        var allLikes = await LikeRepository.GetByPostsAsync(postIds);
+
+        // current-user likes just for IsLikedByCurrentUser
+        IEnumerable<Like> userLikes = Enumerable.Empty<Like>();
+        if (CurrentUserId is not null)
+            userLikes = await LikeRepository.GetByPostsForUserAsync(CurrentUserId.Value, postIds);
+
+        foreach (var p in posts)
+        {
+            p.LikeCount = allLikes.Count(l => l.PostId == p.PostId);
+            p.IsLikedByCurrentUser = CurrentUserId is not null &&
+                                     userLikes.Any(l => l.PostId == p.PostId);
+        }
     }
+
 
     private void OnImageSelected(InputFileChangeEventArgs e)
     {
@@ -370,15 +387,31 @@ else
         if (CurrentUserId is null)
             return;
 
-        // TODO: call LikeRepository here to persist like/unlike
         if (p.IsLikedByCurrentUser)
         {
+            // Unlike: remove existing like
+            var existing = await LikeRepository.GetByUserAndPostAsync(CurrentUserId.Value, p.PostId);
+            if (existing is not null)
+            {
+                LikeRepository.Delete(existing);
+                await LikeRepository.SaveChangesAsync();
+            }
+
             p.IsLikedByCurrentUser = false;
-            if (p.LikeCount > 0)
-                p.LikeCount--;
+            if (p.LikeCount > 0) p.LikeCount--;
         }
         else
         {
+            // Like: create new like
+            var like = new Like
+            {
+                PostId = p.PostId,
+                UserId = CurrentUserId.Value,
+            };
+
+            await LikeRepository.AddSync(like);
+            await LikeRepository.SaveChangesAsync();
+
             p.IsLikedByCurrentUser = true;
             p.LikeCount++;
         }

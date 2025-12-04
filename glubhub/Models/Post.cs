@@ -1,4 +1,6 @@
-﻿namespace glubhub.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace glubhub.Models
 {
     public class Post
     {
@@ -31,9 +33,10 @@
         public ICollection<Comments> Comments { get; set; } = new List<Comments>();
         public ICollection<Like> Likes { get; set; } = new List<Like>();
 
-
+        [NotMapped]
         public bool IsLikedByCurrentUser { get; set; }
 
+        [NotMapped]
         public int LikeCount { get; set; }
 
 
