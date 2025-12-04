@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.AspNetCore.ResponseCompression;
 using glubhub.Hubs;
+using MudBlazor.Services;
 
 namespace glubhub
 {
@@ -78,6 +79,7 @@ namespace glubhub
             builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true);
             builder.Services.AddHttpClient<WeatherService>();
             builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+            builder.Services.AddMudServices();
 
 
 
