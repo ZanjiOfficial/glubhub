@@ -12,12 +12,8 @@ using glubhub.Data;
 namespace glubhub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-<<<<<<<< HEAD:glubhub/Migrations/20251128084541_InitialCreate.Designer.cs
-    [Migration("20251128084541_InitialCreate")]
-========
-    [Migration("20251201115251_InitialCreate")]
->>>>>>>> origin/FixTechniqueOnPost:glubhub/Migrations/20251201115251_InitialCreate.Designer.cs
-    partial class InitialCreate
+    [Migration("20251202112611_AddTagColumnsToPosts")]
+    partial class AddTagColumnsToPosts
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -451,19 +447,14 @@ namespace glubhub.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-<<<<<<<< HEAD:glubhub/Migrations/20251128084541_InitialCreate.Designer.cs
-                    b.Property<int?>("LocationId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-========
                     b.Property<int?>("FishId")
                         .HasColumnType("int");
 
                     b.Property<int?>("GearId")
                         .HasColumnType("int");
+
+                    b.Property<string>("GearTags")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("LocationId")
                         .HasColumnType("int");
@@ -474,6 +465,9 @@ namespace glubhub.Migrations
                     b.Property<int?>("TechniqueId")
                         .HasColumnType("int");
 
+                    b.Property<string>("TechniqueTags")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
 
@@ -483,7 +477,6 @@ namespace glubhub.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
->>>>>>>> origin/FixTechniqueOnPost:glubhub/Migrations/20251201115251_InitialCreate.Designer.cs
                     b.HasKey("PostId");
 
                     b.HasIndex("FishId");
@@ -689,8 +682,6 @@ namespace glubhub.Migrations
                     b.HasOne("glubhub.Models.Location", "Location")
                         .WithMany()
                         .HasForeignKey("LocationId");
-<<<<<<<< HEAD:glubhub/Migrations/20251128084541_InitialCreate.Designer.cs
-========
 
                     b.HasOne("glubhub.Models.Picture", "Picture")
                         .WithMany()
@@ -707,7 +698,6 @@ namespace glubhub.Migrations
                     b.Navigation("Fish");
 
                     b.Navigation("Gear");
->>>>>>>> origin/FixTechniqueOnPost:glubhub/Migrations/20251201115251_InitialCreate.Designer.cs
 
                     b.Navigation("Location");
 

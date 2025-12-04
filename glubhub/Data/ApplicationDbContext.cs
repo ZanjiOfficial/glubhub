@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using glubhub.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using glubhub.Models;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace glubhub.Data
