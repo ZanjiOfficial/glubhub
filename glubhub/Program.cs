@@ -1,9 +1,14 @@
-using glubhub.Components;
-using glubhub.Persistent.Repositories;
-using glubhub.Persistent.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using System.Runtime;
+﻿using glubhub.Components;
+using glubhub.Components.Account;
 using glubhub.Data;
+using glubhub.Models;
+using glubhub.Persistent.Interfaces;
+using glubhub.Persistent.Repositories;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using MudBlazor.Services;
+using System.Runtime;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +34,34 @@ builder.Services.AddScoped(typeof(ITechniqueRepository<>), typeof(TechniqueRepos
 builder.Services.AddScoped(typeof(ITimeRepository<>), typeof(TimeRepository<>));
 builder.Services.AddScoped(typeof(ITipsRepository<>), typeof(TipsRepository<>));
 builder.Services.AddScoped(typeof(IWeatherRepository<>), typeof(WeatherRepository<>));
+builder.Services.AddMudServices();
 
+
+builder.Services.AddCascadingAuthenticationState();
+
+builder.Services.AddScoped<IdentityUserAccessor>();
+
+builder.Services.AddScoped<IdentityRedirectManager>();
+
+builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = IdentityConstants.ApplicationScheme;
+        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+    })
+    .AddIdentityCookies();
+
+builder.Services.AddIdentityCore<User>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddSingleton<IEmailSender<User>, IdentityNoOpEmailSender>();
+
+builder.Services.AddAuthorizationCore();
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
 
 
 
@@ -49,5 +81,7 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>();
+
+app.MapAdditionalIdentityEndpoints();;
 
 app.Run();
