@@ -1,7 +1,8 @@
-﻿using glubhub.Models;
-using glubhub.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using glubhub.Data;
+using glubhub.Models;
 using glubhub.Persistent.Interfaces;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace glubhub.Persistent.Repositories
 {

@@ -1,4 +1,8 @@
 ﻿@inherits LayoutComponentBase
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
 @* <div class="page">
     <div>
@@ -7,9 +11,8 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
         </div>
-
         <article class="content px-4">
             @Body
         </article>

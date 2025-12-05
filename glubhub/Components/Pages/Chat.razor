@@ -1,179 +1,57 @@
 ﻿@page "/beskeder"
-@page "/beskeder/{RecipientId}"
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using glubhub.Models
 @using glubhub.Persistent.Interfaces
-@implements IAsyncDisposable
-@inject NavigationManager Navigation
-@inject AuthenticationStateProvider AuthenticationStateProvider
-@inject IMessageRepository<Message> MessageRepository
-@attribute [Authorize]
+
 
 <PageTitle>Fiskebeskeder</PageTitle>
 
-<h3>Fiskebeskeder</h3>
-
-@if (!string.IsNullOrEmpty(RecipientId))
+@if (systemMessages.Count == 0)
 {
-    <div class="chat-container">
-        <div class="messages-container" style="height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
-            @foreach (var message in messages.OrderBy(m => m.CreatedAt))
-            {
-                <div class="message @(message.SenderId == currentUserId ? "sent" : "received")" style="margin: 5px 0; padding: 8px; border-radius: 8px; @(message.SenderId == currentUserId ? "background-color: #007bff; color: white; text-align: right;" : "background-color: #f8f9fa;")">
-                    <div class="message-content">@message.Content</div>
-                    <div class="message-time" style="font-size: 0.8em; opacity: 0.7;">
-                        @message.CreatedAt.ToString("HH:mm")
-                        @if (message.SenderId == currentUserId)
-                        {
-                            <span class="read-status">@(message.Status == SeenStatus.Seen ? "✓✓" : "✓")</span>
-                        }
-                    </div>
-                </div>
-            }
-        </div>
-
-        <div class="message-input" style="display: flex; gap: 10px;">
-            <input @bind="messageInput" @onkeypress="OnKeyPress" placeholder="Skriv en besked..." style="flex: 1; padding: 8px;" />
-            <button class="btn btn-primary" @onclick="SendMessage" disabled="@(!IsConnected || string.IsNullOrEmpty(messageInput))">
-                Send
-            </button>
-        </div>
-    </div>
+    <p>Der er ingen beskeder.</p>
 }
 else
 {
-    <p>Vælg en bruger at chatte med.</p>
+    <ul>
+        @foreach (var message in systemMessages)
+        {
+            <li>@message</li>
+        }
+    </ul>
 }
-
-<div style="margin-top: 20px;">
-    <small>Status: @(IsConnected ? "Forbundet" : "Ikke forbundet")</small>
-</div>
 
 
 
 
 @code {
-    [Parameter] public string? RecipientId { get; set; }
 
-    private HubConnection? hubConnection;
-    private List<Message> messages = new();
-    private string? messageInput;
-    private string? currentUserId;
+    private List<string> systemMessages = new List<string>();
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        currentUserId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
-        if (string.IsNullOrEmpty(currentUserId))
-            return;
-
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+        var hubconnection = new HubConnectionBuilder()
+            .WithUrl($"https://localhost:7076/chathub")
+            .WithAutomaticReconnect()
             .Build();
 
-        hubConnection.On<string, string, int, DateTime>("ReceiveMessage", (senderId, content, messageId, createdAt) =>
-        {
-            var message = new Message
-            {
-                MessageId = messageId,
-                SenderId = senderId,
-                RecipientId = currentUserId,
-                Content = content,
-                CreatedAt = createdAt,
-                Status = SeenStatus.Seen
-            };
-            messages.Add(message);
-            InvokeAsync(StateHasChanged);
-        });
+        hubconnection.On<string>("ReceiveSystemMessage", RecieveSystemMessage);
 
-        hubConnection.On<string, string, int, DateTime>("MessageSent", (recipientId, content, messageId, createdAt) =>
-        {
-            var message = new Message
-            {
-                MessageId = messageId,
-                SenderId = currentUserId,
-                RecipientId = recipientId,
-                Content = content,
-                CreatedAt = createdAt,
-                Status = SeenStatus.Seen
-            };
-            messages.Add(message);
-            InvokeAsync(StateHasChanged);
-        });
-
-        hubConnection.On<int>("MessageRead", (messageId) =>
-        {
-            var message = messages.FirstOrDefault(m => m.MessageId == messageId);
-            if (message != null)
-            {
-                message.Status = SeenStatus.Seen;
-                InvokeAsync(StateHasChanged);
-            }
-        });
-
-        await hubConnection.StartAsync();
-        await LoadChatHistory();
+        await hubconnection.StartAsync();
     }
 
-    protected override async Task OnParametersSetAsync()
+
+    private void RecieveSystemMessage(string message)
     {
-        if (!string.IsNullOrEmpty(RecipientId) && hubConnection?.State == HubConnectionState.Connected)
+        if (!string.IsNullOrEmpty(message))
         {
-            await LoadChatHistory();
+            systemMessages.Add(message);
+            StateHasChanged(); //ikke nødvendigt, men hvis vi ændre rendermode til noget andet end InteractiveServer.
         }
     }
 
-    private async Task LoadChatHistory()
-    {
-        if (string.IsNullOrEmpty(currentUserId) || string.IsNullOrEmpty(RecipientId))
-            return;
-
-        var allMessages = await MessageRepository.GetAllAsync();
-        messages = allMessages.Where(m => 
-            (m.SenderId == currentUserId && m.RecipientId == RecipientId) ||
-            (m.SenderId == RecipientId && m.RecipientId == currentUserId))
-            .ToList();
-
-        StateHasChanged();
-    }
-
-    private async Task SendMessage()
-    {
-        if (hubConnection is not null && !string.IsNullOrEmpty(messageInput) && !string.IsNullOrEmpty(RecipientId))
-        {
-            await hubConnection.SendAsync("SendMessageToUser", RecipientId, messageInput);
-            messageInput = string.Empty;
-        }
-
-    }
-
-
-
-    private async Task OnKeyPress(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter")
-        {
-            await SendMessage();
-        }
-    }
-
-
-
-
-    public bool IsConnected =>
-        hubConnection?.State == HubConnectionState.Connected;
-
-
-
-    public async ValueTask DisposeAsync()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.DisposeAsync();
-        }
-    }
 }
+
+

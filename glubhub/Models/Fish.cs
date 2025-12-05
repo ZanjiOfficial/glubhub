@@ -13,5 +13,12 @@
             FishId = fishId;
             this.Length = length;
         }
+
+        public Fish()
+        {
+            Species = "Unknown";
+            Length = 0;
+            Weight = 0.0;
+        }
     }
 }

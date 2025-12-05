@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using glubhub.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 using glubhub.Models;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace glubhub.Data
 {
@@ -17,23 +18,12 @@ namespace glubhub.Data
         public DbSet<glubhub.Models.Technique> Techniques { get; set; }
         public DbSet<glubhub.Models.Time> Times { get; set; }
         public DbSet<glubhub.Models.Tips> Tips { get; set; }
+        public DbSet<glubhub.Models.Like> Likes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // User entity configuration
-            //modelBuilder.Entity<glubhub.Models.User>(entity =>
-            //{
-            //    // Don't configure Id, Email, PasswordHash - Identity handles these
-            //    entity.Property(e => e.UserName).IsRequired().HasMaxLength(255);
-            //    entity.Property(e => e.ProfilePicture).IsRequired();
-            //    entity.Property(e => e.CreationDate).IsRequired(); // Fixed property name
-
-            //    // Ignore collection properties for now
-            //    entity.Ignore(e => e.Followers);
-            //    entity.Ignore(e => e.Following);
-            //});
 
             // Fish entity configuration 
             modelBuilder.Entity<glubhub.Models.Fish>(entity =>
@@ -102,9 +92,7 @@ namespace glubhub.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
-
-
-
+            
             // Picture entity configuration
             modelBuilder.Entity<glubhub.Models.Picture>(entity =>
             {
@@ -162,6 +150,21 @@ namespace glubhub.Data
             //    entity.Property(e => e.AirPressure).IsRequired();
             //    entity.Property(e => e.WindSpeed).IsRequired();
             //});
+
+            // Post–Comments one-to-many
+            modelBuilder.Entity<Post>()
+                .HasMany(p => p.Comments)
+                .WithOne(c => c.Post)
+                .HasForeignKey(c => c.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Post–Likes one-to-many
+            modelBuilder.Entity<Post>()
+                .HasMany(p => p.Likes)
+                .WithOne(l => l.Post)
+                .HasForeignKey(l => l.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

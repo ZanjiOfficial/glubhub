@@ -1,18 +1,19 @@
 ﻿using glubhub.Components;
-using glubhub.Models;
-using glubhub.Persistent.Repositories;
-using glubhub.Data;
-using glubhub.Persistent.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using System.Reflection;
-using System.Runtime;
 using glubhub.Components.Account;
+using glubhub.Data;
+using glubhub.Hubs;
+using glubhub.Models;
+using glubhub.Persistent.Interfaces;
+using glubhub.Persistent.Repositories;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.SignalR;
 using glubhub.Hubs;
+using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using System.Reflection;
+
 
 namespace glubhub
 {
@@ -31,12 +32,27 @@ namespace glubhub
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            builder.Services.AddSignalR();
+            builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+
+            builder.Services.Configure<HubOptions>(options =>
+            {
+                options.EnableDetailedErrors = true;
+                options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+                options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+            });
+
             builder.Services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-                    [ "application/octet-stream" ]);
+                    ["application/octet-stream"]);
             });
+
+            builder.Services.AddMudServices();
 
             builder.Services.AddCascadingAuthenticationState();
 
@@ -44,7 +60,7 @@ namespace glubhub
 
             builder.Services.AddScoped<IdentityRedirectManager>();
 
-            builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+            
 
             builder.Services.AddAuthentication(options =>
                 {
@@ -54,11 +70,13 @@ namespace glubhub
                 .AddIdentityCookies();
 
             builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddSignInManager()
                 .AddDefaultTokenProviders();
 
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
 
             builder.Services.AddAuthorizationCore();
             builder.Services.AddAuthentication();
@@ -75,6 +93,8 @@ namespace glubhub
             builder.Services.AddScoped(typeof(ITimeRepository<>), typeof(TimeRepository<>));
             builder.Services.AddScoped(typeof(ITipsRepository<>), typeof(TipsRepository<>));
             builder.Services.AddScoped(typeof(IWeatherRepository<>), typeof(WeatherRepository<>));
+            builder.Services.AddScoped(typeof(ICommentsRepository<>), typeof(CommentsRepository<>));
+            builder.Services.AddScoped(typeof(ILikeRepository<>), typeof(LikeRepository<>));
 
             builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true);
             builder.Services.AddHttpClient<WeatherService>();
@@ -83,25 +103,30 @@ namespace glubhub
 
 
 
+            builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
             var app = builder.Build();
 
-
-            // Configure the HTTP request pipeline.
+            
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error", createScopeForErrors: true);
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             app.UseResponseCompression();
-            app.MapHub<ChatHub>("/chathub");
             app.UseHttpsRedirection();
-
             app.UseStaticFiles();
+
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
             app.UseAntiforgery();
-            app.MapAdditionalIdentityEndpoints(); ;
+            app.MapAdditionalIdentityEndpoints();
+
+
+
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
 

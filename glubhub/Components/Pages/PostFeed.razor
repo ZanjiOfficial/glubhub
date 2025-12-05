@@ -1,0 +1,625 @@
+﻿@using glubhub.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject IPostRepository<Post> PostRepository
+@inject IFishRepository<Fish> FishRepository
+@inject ITipsRepository<Tips> TipsRepository
+@inject IPictureRepository<Picture> PictureRepository
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ICommentsRepository<Comments> CommentsRepository
+@inject ILikeRepository<Like> LikeRepository
+
+<h4>Share your latest catch</h4>
+
+@if (CurrentUserId is not null)
+{
+    <EditForm Model="@post" OnValidSubmit="@CreatePostAsync">
+        <div class="mb-1">
+            <InputText class="form-control"
+                       @bind-Value="post.Comment"
+                       placeholder="Short title or comment" />
+        </div>
+
+        <div class="row g-1 mb-1">
+            <div class="col">
+                <InputText class="form-control"
+                           @bind-Value="post.Location.City"
+                           placeholder="City" />
+            </div>
+            <div class="col">
+                <InputText class="form-control"
+                           @bind-Value="post.Location.Region"
+                           placeholder="Region" />
+            </div>
+        </div>
+
+        <div class="mb-2">
+            <InputTextArea class="form-control"
+                           @bind-Value="post.Content"
+                           placeholder="Tell us about the catch..." />
+        </div>
+
+        <div class="mb-2">
+            <InputFile OnChange="OnImageSelected" />
+        </div>
+
+        <div class="card mb-2 border-0 bg-light">
+            <div class="card-body py-2">
+                <div class="fw-semibold small mb-2">Catch details</div>
+
+                <div class="row g-1 mb-2">
+                    <div class="col-6">
+                        <InputText class="form-control form-control-sm"
+                                   @bind-Value="fishSpecies"
+                                   placeholder="Species (e.g. Pike)" />
+                    </div>
+                    <div class="col-3">
+                        <InputNumber TValue="int?" class="form-control form-control-sm"
+                                     @bind-Value="fishLength"
+                                     placeholder="cm" />
+                    </div>
+                    <div class="col-3">
+                        <InputNumber TValue="double?" class="form-control form-control-sm"
+                                     @bind-Value="fishWeight"
+                                     placeholder="kg" />
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Techniques</label>
+                    <div class="d-flex">
+                        <InputText class="form-control form-control-sm"
+                                   @bind-Value="newTechnique"
+                                   placeholder="Add technique" />
+                        <button type="button"
+                                class="btn btn-sm btn-outline-primary ms-2"
+                                @onclick="AddTechniqueTag">
+                            Add
+                        </button>
+                    </div>
+                    <div class="mt-1">
+                        @foreach (var t in techniqueTags)
+                        {
+                            <span class="badge bg-info me-1">
+                                @t
+                                <button type="button"
+                                        class="btn-close btn-close-white btn-sm ms-1"
+                                        @onclick="() => RemoveTechniqueTag(t)"
+                                        aria-label="Remove">
+                                </button>
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Gear</label>
+                    <div class="d-flex">
+                        <InputText class="form-control form-control-sm"
+                                   @bind-Value="newGear"
+                                   placeholder="Add gear" />
+                        <button type="button"
+                                class="btn btn-sm btn-outline-primary ms-2"
+                                @onclick="AddGearTag">
+                            Add
+                        </button>
+                    </div>
+                    <div class="mt-1">
+                        @foreach (var g in gearTags)
+                        {
+                            <span class="badge bg-success me-1">
+                                @g
+                                <button type="button"
+                                        class="btn-close btn-close-white btn-sm ms-1"
+                                        @onclick="() => RemoveGearTag(g)"
+                                        aria-label="Remove">
+                                </button>
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                <InputTextArea class="form-control form-control-sm"
+                               @bind-Value="tipsText"
+                               placeholder="Tips for other anglers" />
+            </div>
+        </div>
+
+        <button class="btn btn-primary" disabled="@isSubmitting">
+            @(isSubmitting ? "Posting..." : "Post")
+        </button>
+    </EditForm>
+}
+else
+{
+    <p class="text-muted small">
+        Log in to share your own catch. You can still browse all posts.
+    </p>
+}
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <p class="text-success">@statusMessage</p>
+}
+
+<hr class="mt-0 mb-3" />
+
+@foreach (var p in posts)
+{
+    <div class="card my-3 shadow-sm border-0"
+         style="cursor:pointer"
+         @onclick="() => OpenPost(p.PostId)">
+        <div class="card-body">
+
+            <div class="d-flex">
+                <div class="me-3">
+                    <div class="rounded-circle bg-secondary"
+                         style="width:40px;height:40px;"></div>
+                </div>
+
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>@p.Comment</strong>
+                            @if (p.Location is not null)
+                            {
+                                <span class="text-muted">
+                                    @p.Location.City, @p.Location.Region
+                                </span>
+                            }
+                        </div>
+                        <small class="text-muted">
+                            @p.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")
+                        </small>
+                    </div>
+
+                    <p class="mt-2 mb-2">@p.Content</p>
+
+                    @if (p.Picture is not null)
+                    {
+                        <img src="@p.Picture.Link" class="img-fluid mt-2 rounded" />
+                    }
+
+                    @if (p.Fish is not null || p.Tips is not null)
+                    {
+                        <div class="small text-muted mb-2">
+                            @if (p.Fish is not null)
+                            {
+                                <div>
+                                    Fish: @p.Fish.Species (@p.Fish.Length cm, @p.Fish.Weight kg)
+                                </div>
+                            }
+                            @if (p.Tips is not null)
+                            {
+                                <div>Tips: @p.Tips.Text</div>
+                            }
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(p.TechniqueTags))
+                    {
+                        <div class="mb-1">
+                            @foreach (var tag in p.TechniqueTags.Split(",", StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                <span class="badge bg-info me-1">@tag</span>
+                            }
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(p.GearTags))
+                    {
+                        <div class="mb-2">
+                            @foreach (var tag in p.GearTags.Split(",", StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                <span class="badge bg-success me-1">@tag</span>
+                            }
+                        </div>
+                    }
+
+                    <div class="text-muted small d-flex flex-wrap gap-3 align-items-center">
+                        <button class="btn btn-link p-0 small"
+                                @onclick:stopPropagation="true"
+                                @onclick="() => ToggleLikeAsync(p)">
+                            @(p.IsLikedByCurrentUser ? "Unlike" : "Like") (@p.LikeCount)
+                        </button>
+
+                        <button class="btn btn-link p-0 small"
+                                @onclick:stopPropagation="true"
+                                @onclick="() => OpenPost(p.PostId)">
+                            Comment
+                        </button>
+
+                        <button class="btn btn-link p-0 small"
+                                @onclick:stopPropagation="true">
+                            Share
+                        </button>
+
+                        @if (CurrentUserId is not null && p.UserId == CurrentUserId.Value)
+                        {
+                            <button class="btn btn-link p-0 text-danger small"
+                                    @onclick:stopPropagation="true"
+                                    @onclick="() => DeletePostAsync(p)">
+                                Delete
+                            </button>
+                        }
+                    </div>
+
+                    @if (openedPostId == p.PostId)
+                    {
+                        <hr />
+                        <h6 class="small fw-bold">Comments</h6>
+
+                        @foreach (var c in openedComments)
+                        {
+                            <div class="mb-2 small">
+                                <strong>@c.UserId</strong>
+                                <div>@c.Text</div>
+                            </div>
+                        }
+
+                        @if (CurrentUserId is not null)
+                        {
+                            <EditForm OnValidSubmit="() => AddCommentAsync(p.PostId)">
+                                <InputTextArea class="form-control form-control-sm mb-1"
+                                               @bind-Value="newCommentText"
+                                               placeholder="Reply..." />
+                                <button class="btn btn-sm btn-primary" type="submit">
+                                    Reply
+                                </button>
+                            </EditForm>
+                        }
+                        else
+                        {
+                            <p class="small text-muted">Log in to reply.</p>
+                        }
+                    }
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+}
+
+@if (selectedPost is not null)
+{
+    <div class="card my-3 border">
+        <div class="card-header d-flex justify-content-between">
+            <span>Post details</span>
+            <button class="btn btn-sm btn-outline-secondary"
+                    @onclick="() => selectedPost = null">
+                Close
+            </button>
+        </div>
+        <div class="card-body">
+            <strong>@selectedPost.Comment</strong>
+            <p class="mt-2 mb-2">@selectedPost.Content</p>
+
+            <hr />
+
+            <h6>Comments</h6>
+            @foreach (var c in selectedComments)
+            {
+                <div class="mb-2">
+                    <strong>@c.UserId</strong>
+                    <div>@c.Text</div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+
+@code {
+    private Post post = new()
+    {
+        Location = new Location("", "", "", SpotType.Lake, 0, 0, 0)
+    };
+
+    private List<Post> posts = new();
+    private bool isSubmitting;
+    private string? statusMessage;
+
+    private string? fishSpecies;
+    private int? fishLength;
+    private double? fishWeight;
+
+    private string? newTechnique;
+    private string? newGear;
+    private List<string> techniqueTags = new();
+    private List<string> gearTags = new();
+    private string? tipsText;
+
+    private int? selectedPostId;
+    private Post? selectedPost;
+    private List<Comments> selectedComments = new();
+
+    private int? openedPostId;
+    private List<Comments> openedComments = new();
+
+    private string? newCommentText;
+
+    [Inject] ICommentsRepository<Comments> CommentRepository { get; set; } = default!;
+
+    private IBrowserFile? imageFile;
+    private Guid? CurrentUserId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var idString = user.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value;
+            if (Guid.TryParse(idString, out var id))
+                CurrentUserId = id;
+        }
+
+        posts = (await PostRepository.GetAllAsync()).ToList();
+        var postIds = posts.Select(p => p.PostId).ToList();
+
+        // total likes for counts
+        var allLikes = await LikeRepository.GetByPostsAsync(postIds);
+
+        // current-user likes just for IsLikedByCurrentUser
+        IEnumerable<Like> userLikes = Enumerable.Empty<Like>();
+        if (CurrentUserId is not null)
+            userLikes = await LikeRepository.GetByPostsForUserAsync(CurrentUserId.Value, postIds);
+
+        foreach (var p in posts)
+        {
+            p.LikeCount = allLikes.Count(l => l.PostId == p.PostId);
+            p.IsLikedByCurrentUser = CurrentUserId is not null &&
+                                     userLikes.Any(l => l.PostId == p.PostId);
+        }
+    }
+
+
+    private void OnImageSelected(InputFileChangeEventArgs e)
+    {
+        imageFile = e.File;
+    }
+
+    private async Task ToggleLikeAsync(Post p)
+    {
+        if (CurrentUserId is null)
+            return;
+
+        if (p.IsLikedByCurrentUser)
+        {
+            // Unlike: remove existing like
+            var existing = await LikeRepository.GetByUserAndPostAsync(CurrentUserId.Value, p.PostId);
+            if (existing is not null)
+            {
+                LikeRepository.Delete(existing);
+                await LikeRepository.SaveChangesAsync();
+            }
+
+            p.IsLikedByCurrentUser = false;
+            if (p.LikeCount > 0) p.LikeCount--;
+        }
+        else
+        {
+            // Like: create new like
+            var like = new Like
+            {
+                PostId = p.PostId,
+                UserId = CurrentUserId.Value,
+            };
+
+            await LikeRepository.AddSync(like);
+            await LikeRepository.SaveChangesAsync();
+
+            p.IsLikedByCurrentUser = true;
+            p.LikeCount++;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task OpenPost(int postId)
+    {
+        if (openedPostId == postId)
+        {
+            openedPostId = null;
+            openedComments.Clear();
+            newCommentText = string.Empty;
+            return;
+        }
+
+        openedPostId = postId;
+        openedComments = (await CommentRepository.GetByPostAsync(postId)).ToList();
+        newCommentText = string.Empty;
+    }
+
+    private async Task AddCommentAsync(int postId)
+    {
+        if (CurrentUserId is null || string.IsNullOrWhiteSpace(newCommentText))
+            return;
+
+        var comment = new Comments
+        {
+            PostId = postId,
+            UserId = CurrentUserId.Value,
+            Text = newCommentText,
+            Timestamp = DateTime.UtcNow
+        };
+
+        await CommentRepository.AddSync(comment);
+        await CommentRepository.SaveChangesAsync();
+
+        openedComments.Add(comment);
+        newCommentText = string.Empty;
+    }
+
+    private async Task<string?> SaveImageAsync()
+    {
+        if (imageFile is null)
+            return null;
+
+        var uploadsFolder = Path.Combine("wwwroot", "uploads");
+        Directory.CreateDirectory(uploadsFolder);
+
+        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(imageFile.Name)}";
+        var filePath = Path.Combine(uploadsFolder, fileName);
+
+        await using var stream = File.Create(filePath);
+        await imageFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024)
+                       .CopyToAsync(stream);
+
+        return $"/uploads/{fileName}";
+    }
+
+    private void AddTechniqueTag()
+    {
+        if (!string.IsNullOrWhiteSpace(newTechnique) && !techniqueTags.Contains(newTechnique))
+        {
+            techniqueTags.Add(newTechnique.Trim());
+            newTechnique = string.Empty;
+        }
+    }
+
+    private void RemoveTechniqueTag(string val)
+    {
+        techniqueTags.Remove(val);
+    }
+
+    private void AddGearTag()
+    {
+        if (!string.IsNullOrWhiteSpace(newGear) && !gearTags.Contains(newGear))
+        {
+            gearTags.Add(newGear.Trim());
+            newGear = string.Empty;
+        }
+    }
+
+    private void RemoveGearTag(string val)
+    {
+        gearTags.Remove(val);
+    }
+
+    private async Task CreatePostAsync()
+    {
+        if (CurrentUserId is null)
+        {
+            statusMessage = "You must be logged in to create a post.";
+            return;
+        }
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(post.Content))
+            {
+                statusMessage = "Please write something before posting.";
+                return;
+            }
+
+            isSubmitting = true;
+            statusMessage = null;
+
+            post.UserId = CurrentUserId.Value;
+            post.Timestamp = DateTime.UtcNow;
+            post.IsLikedByCurrentUser = false;
+            post.LikeCount = 0;
+
+            // Fish
+            if (!string.IsNullOrWhiteSpace(fishSpecies) ||
+                fishLength is not null ||
+                fishWeight is not null)
+            {
+                var fish = new Fish
+                {
+                    Species = fishSpecies ?? "",
+                    Length = fishLength ?? 0,
+                    Weight = fishWeight ?? 0
+                };
+
+                await FishRepository.AddSync(fish);
+                await FishRepository.SaveChangesAsync();
+                post.FishId = fish.FishId;
+            }
+
+            // Tags as comma-separated strings
+            post.TechniqueTags = string.Join(",", techniqueTags);
+            post.GearTags = string.Join(",", gearTags);
+
+            // Tips
+            if (!string.IsNullOrWhiteSpace(tipsText))
+            {
+                var tips = new Tips { Text = tipsText, Link = "", Type = "" };
+                await TipsRepository.AddSync(tips);
+                await TipsRepository.SaveChangesAsync();
+                post.TipsId = tips.TipsId;
+            }
+
+            // Picture
+            var imageUrl = await SaveImageAsync();
+            if (!string.IsNullOrEmpty(imageUrl))
+            {
+                var picture = new Picture { Link = imageUrl };
+                await PictureRepository.AddSync(picture);
+                await PictureRepository.SaveChangesAsync();
+                post.PictureId = picture.PictureId;
+            }
+
+            await PostRepository.AddAsync(post);
+            await PostRepository.SaveChangesAsync();
+
+            posts.Insert(0, post);
+
+            // reset
+            post = new Post
+            {
+                Location = new Location("", "", "", SpotType.Lake, 0, 0, 0)
+            };
+            fishSpecies = null;
+            fishLength = null;
+            fishWeight = null;
+            techniqueTags.Clear();
+            gearTags.Clear();
+            newTechnique = null;
+            newGear = null;
+            tipsText = null;
+            imageFile = null;
+
+            statusMessage = "Post created!";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error: {ex.InnerException?.Message ?? ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task DeletePostAsync(Post p)
+    {
+        if (p is null || CurrentUserId is null)
+        {
+            statusMessage = "You must be logged in to delete posts.";
+            return;
+        }
+
+        try
+        {
+            if (p.UserId != CurrentUserId.Value)
+            {
+                statusMessage = "You can only delete your own posts.";
+                return;
+            }
+
+            await PostRepository.DeleteAsync(p.PostId, CurrentUserId.Value);
+            posts.Remove(p);
+
+            statusMessage = "Post deleted.";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Failed to delete post: {ex.Message}";
+        }
+    }
+}
