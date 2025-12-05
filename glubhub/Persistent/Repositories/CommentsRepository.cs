@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace glubhub.Persistent.Repositories
 {
-    public class MessageRepository<T> : IMessageRepository<T> where T : Message
+    public class CommentsRepository<T> : ICommentsRepository<T> where T : Comments
     {
         private readonly ApplicationDbContext _context;
         private readonly DbSet<T> _dbSet;
 
 
-        public MessageRepository(ApplicationDbContext context)
+        public CommentsRepository(ApplicationDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();
@@ -46,6 +46,15 @@ namespace glubhub.Persistent.Repositories
         public void Update(T entity)
         {
             _dbSet.Update(entity);
+        }
+        public async Task<IEnumerable<T>> GetByPostAsync(int postId)
+        {
+            return await _dbSet.Where(c => c.PostId == postId).ToListAsync();
+        }
+
+        public Task<IEnumerable<T>> GetByPostAsync()
+        {
+            throw new NotImplementedException();
         }
     }
 }

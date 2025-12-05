@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using glubhub.Data;
 
@@ -11,9 +12,11 @@ using glubhub.Data;
 namespace glubhub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251203185939_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -509,11 +512,20 @@ namespace glubhub.Migrations
                     b.Property<int?>("FishId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("GearId")
+                    b.Property<string>("GearId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("GearId1")
                         .HasColumnType("int");
 
                     b.Property<string>("GearTags")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsLikedByCurrentUser")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LikeCount")
+                        .HasColumnType("int");
 
                     b.Property<int?>("LocationId")
                         .HasColumnType("int");
@@ -521,7 +533,10 @@ namespace glubhub.Migrations
                     b.Property<int?>("PictureId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("TechniqueId")
+                    b.Property<string>("TechniqueId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TechniqueId1")
                         .HasColumnType("int");
 
                     b.Property<string>("TechniqueTags")
@@ -540,13 +555,13 @@ namespace glubhub.Migrations
 
                     b.HasIndex("FishId");
 
-                    b.HasIndex("GearId");
+                    b.HasIndex("GearId1");
 
                     b.HasIndex("LocationId");
 
                     b.HasIndex("PictureId");
 
-                    b.HasIndex("TechniqueId");
+                    b.HasIndex("TechniqueId1");
 
                     b.HasIndex("TipsId");
 
@@ -768,7 +783,9 @@ namespace glubhub.Migrations
 
                     b.HasOne("glubhub.Models.Gear", "Gear")
                         .WithMany()
-                        .HasForeignKey("GearId");
+                        .HasForeignKey("GearId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("glubhub.Models.Location", "Location")
                         .WithMany()
@@ -780,7 +797,7 @@ namespace glubhub.Migrations
 
                     b.HasOne("glubhub.Models.Technique", "Technique")
                         .WithMany()
-                        .HasForeignKey("TechniqueId");
+                        .HasForeignKey("TechniqueId1");
 
                     b.HasOne("glubhub.Models.Tips", "Tips")
                         .WithMany()
