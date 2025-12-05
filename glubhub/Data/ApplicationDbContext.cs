@@ -18,6 +18,7 @@ namespace glubhub.Data
         public DbSet<glubhub.Models.Technique> Techniques { get; set; }
         public DbSet<glubhub.Models.Time> Times { get; set; }
         public DbSet<glubhub.Models.Tips> Tips { get; set; }
+        public DbSet<glubhub.Models.Like> Likes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -138,6 +139,32 @@ namespace glubhub.Data
                 entity.Property(e => e.Type).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Link).HasMaxLength(200);
             });
+
+            // Weather entity configuration
+            //modelBuilder.Entity<glubhub.Models.Weather>(entity =>
+            //{
+            //    entity.HasKey(e => e.WeatherId);
+            //    entity.Property(e => e.Temperature).IsRequired();
+            //    entity.Property(e => e.RainAmount).IsRequired();
+            //    entity.Property(e => e.Cloudiness).HasMaxLength(100);
+            //    entity.Property(e => e.AirPressure).IsRequired();
+            //    entity.Property(e => e.WindSpeed).IsRequired();
+            //});
+
+            // Post–Comments one-to-many
+            modelBuilder.Entity<Post>()
+                .HasMany(p => p.Comments)
+                .WithOne(c => c.Post)
+                .HasForeignKey(c => c.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Post–Likes one-to-many
+            modelBuilder.Entity<Post>()
+                .HasMany(p => p.Likes)
+                .WithOne(l => l.Post)
+                .HasForeignKey(l => l.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

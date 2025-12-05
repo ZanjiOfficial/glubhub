@@ -1,19 +1,18 @@
 ﻿using glubhub.Components;
-using glubhub.Models;
-using glubhub.Persistent.Repositories;
-using glubhub.Data;
-using glubhub.Persistent.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using System.Reflection;
-using System.Runtime;
 using glubhub.Components.Account;
+using glubhub.Data;
+using glubhub.Hubs;
+using glubhub.Models;
+using glubhub.Persistent.Interfaces;
+using glubhub.Persistent.Repositories;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SignalR;
 using glubhub.Hubs;
+using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using System.Reflection;
 
 namespace glubhub
 {
@@ -49,7 +48,7 @@ namespace glubhub
             builder.Services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-                    [ "application/octet-stream" ]);
+                    ["application/octet-stream"]);
             });
 
             builder.Services.AddMudServices();
@@ -93,11 +92,13 @@ namespace glubhub
             builder.Services.AddScoped(typeof(ITimeRepository<>), typeof(TimeRepository<>));
             builder.Services.AddScoped(typeof(ITipsRepository<>), typeof(TipsRepository<>));
             builder.Services.AddScoped(typeof(IWeatherRepository<>), typeof(WeatherRepository<>));
+            builder.Services.AddScoped(typeof(ICommentsRepository<>), typeof(CommentsRepository<>));
+            builder.Services.AddScoped(typeof(ILikeRepository<>), typeof(LikeRepository<>));
 
             builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true);
             builder.Services.AddHttpClient<WeatherService>();
             builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
-            
+
 
 
             builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();

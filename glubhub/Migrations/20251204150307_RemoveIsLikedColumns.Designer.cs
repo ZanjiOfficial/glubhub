@@ -12,14 +12,13 @@ using glubhub.Data;
 namespace glubhub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
+<<<<<<<< HEAD:glubhub/Migrations/20251128084541_InitialCreate.Designer.cs
     [Migration("20251128084541_InitialCreate")]
-
-    [Migration("20251201115251_InitialCreate")]
-
     partial class InitialCreate
-
+========
     [Migration("20251204150307_RemoveIsLikedColumns")]
     partial class RemoveIsLikedColumns
+>>>>>>>> origin/MakingCommentsAndLikeLookNice:glubhub/Migrations/20251204150307_RemoveIsLikedColumns.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -514,12 +513,14 @@ namespace glubhub.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+<<<<<<<< HEAD:glubhub/Migrations/20251128084541_InitialCreate.Designer.cs
                     b.Property<int?>("LocationId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
 
+========
                     b.Property<int?>("FishId")
                         .HasColumnType("int");
 
@@ -550,9 +551,7 @@ namespace glubhub.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
-
-
-
+>>>>>>>> origin/MakingCommentsAndLikeLookNice:glubhub/Migrations/20251204150307_RemoveIsLikedColumns.Designer.cs
                     b.HasKey("PostId");
 
                     b.HasIndex("FishId");
@@ -790,7 +789,8 @@ namespace glubhub.Migrations
                     b.HasOne("glubhub.Models.Location", "Location")
                         .WithMany()
                         .HasForeignKey("LocationId");
-
+<<<<<<<< HEAD:glubhub/Migrations/20251128084541_InitialCreate.Designer.cs
+========
 
                     b.HasOne("glubhub.Models.Picture", "Picture")
                         .WithMany()
@@ -807,7 +807,7 @@ namespace glubhub.Migrations
                     b.Navigation("Fish");
 
                     b.Navigation("Gear");
-
+>>>>>>>> origin/MakingCommentsAndLikeLookNice:glubhub/Migrations/20251204150307_RemoveIsLikedColumns.Designer.cs
 
                     b.Navigation("Location");
 

@@ -1,5 +1,6 @@
 ﻿using glubhub.Data;
 using glubhub.Models;
+using glubhub.Persistent.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 public class PostRepository<T> : IPostRepository<T> where T : Post
@@ -39,9 +40,10 @@ public class PostRepository<T> : IPostRepository<T> where T : Post
             .Include(p => p.Technique)
             .Include(p => p.Tips)
             .Include(p => p.Picture)
+            .Include(p => p.Comments)
+            .Include(p => p.Likes)
             .OrderByDescending(p => p.Timestamp)
             .ToListAsync();
-
     }
 
     public async Task<T?> GetByIdAsync(int id)
