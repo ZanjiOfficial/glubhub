@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using System.Reflection;
 
+
 namespace glubhub
 {
     public class Program
@@ -98,6 +99,7 @@ namespace glubhub
             builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true);
             builder.Services.AddHttpClient<WeatherService>();
             builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+            builder.Services.AddMudServices();
 
 
 
