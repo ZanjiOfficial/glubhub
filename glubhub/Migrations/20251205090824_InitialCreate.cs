@@ -360,38 +360,18 @@ namespace glubhub.Migrations
                 {
                     PostId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Comment = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    LocationId = table.Column<int>(type: "int", nullable: true),
-                    Content = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-
-                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false)
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    FishId = table.Column<int>(type: "int", nullable: true),
-                    GearId = table.Column<int>(type: "int", nullable: true),
-                    TechniqueId = table.Column<int>(type: "int", nullable: true),
-                    TipsId = table.Column<int>(type: "int", nullable: true),
-                    PictureId = table.Column<int>(type: "int", nullable: true)
-
-                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false)
-
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     Content = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
                     LocationId = table.Column<int>(type: "int", nullable: true),
                     FishId = table.Column<int>(type: "int", nullable: true),
-                    GearId = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GearId1 = table.Column<int>(type: "int", nullable: false),
+                    GearId = table.Column<int>(type: "int", nullable: true),
                     TipsId = table.Column<int>(type: "int", nullable: true),
                     PictureId = table.Column<int>(type: "int", nullable: true),
-                    TechniqueId = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TechniqueId1 = table.Column<int>(type: "int", nullable: true),
+                    TechniqueId = table.Column<int>(type: "int", nullable: true),
                     TechniqueTags = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GearTags = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsLikedByCurrentUser = table.Column<bool>(type: "bit", nullable: false),
-                    LikeCount = table.Column<int>(type: "int", nullable: false)
-
+                    GearTags = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -402,25 +382,23 @@ namespace glubhub.Migrations
                         principalTable: "Fish",
                         principalColumn: "FishId");
                     table.ForeignKey(
-                        name: "FK_Posts_Gear_GearId1",
-                        column: x => x.GearId1,
+                        name: "FK_Posts_Gear_GearId",
+                        column: x => x.GearId,
                         principalTable: "Gear",
-                        principalColumn: "GearId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "GearId");
                     table.ForeignKey(
                         name: "FK_Posts_Locations_LocationId",
                         column: x => x.LocationId,
                         principalTable: "Locations",
                         principalColumn: "LocationId");
-
                     table.ForeignKey(
                         name: "FK_Posts_Pictures_PictureId",
                         column: x => x.PictureId,
                         principalTable: "Pictures",
                         principalColumn: "PictureId");
                     table.ForeignKey(
-                        name: "FK_Posts_Techniques_TechniqueId1",
-                        column: x => x.TechniqueId1,
+                        name: "FK_Posts_Techniques_TechniqueId",
+                        column: x => x.TechniqueId,
                         principalTable: "Techniques",
                         principalColumn: "TechniqueId");
                     table.ForeignKey(
@@ -428,7 +406,6 @@ namespace glubhub.Migrations
                         column: x => x.TipsId,
                         principalTable: "Tips",
                         principalColumn: "TipsId");
-
                 });
 
             migrationBuilder.CreateTable(
@@ -483,7 +460,6 @@ namespace glubhub.Migrations
                         principalTable: "Posts",
                         principalColumn: "PostId",
                         onDelete: ReferentialAction.Cascade);
-
                 });
 
             migrationBuilder.CreateIndex(
@@ -573,9 +549,9 @@ namespace glubhub.Migrations
                 column: "FishId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Posts_GearId1",
+                name: "IX_Posts_GearId",
                 table: "Posts",
-                column: "GearId1");
+                column: "GearId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Posts_LocationId",
@@ -588,9 +564,9 @@ namespace glubhub.Migrations
                 column: "PictureId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Posts_TechniqueId1",
+                name: "IX_Posts_TechniqueId",
                 table: "Posts",
-                column: "TechniqueId1");
+                column: "TechniqueId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Posts_TipsId",

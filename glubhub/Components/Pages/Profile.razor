@@ -5,7 +5,7 @@
 
 <h3>My posts</h3>
 
-@if (posts == null)
+@* @if (posts == null)
 {
     <p>Loading profile...</p>
 }
@@ -25,9 +25,9 @@ else
             </li>
         }
     </ul>
-}
+} *@
 
-@code {
+@* @code {
     private List<Post>? posts;
 
     protected override async Task OnInitializedAsync()
@@ -47,7 +47,7 @@ else
             posts = new List<Post>();
         }
     }
-}
+} *@
 
 
 @* <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
