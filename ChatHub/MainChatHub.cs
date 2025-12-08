@@ -28,13 +28,27 @@ namespace ChatHub
                 });
 
             }
-
+            
             await Clients.Caller.SendAsync("ReceiveSystemMessage", "Du har forbindelse!");
+            await Clients.All.SendAsync("UpdateUserList", _connectedUsers);
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-          
+          ConnectedUser? user;
+            lock (_lock)
+            {
+                user = _connectedUsers.FirstOrDefault(u => u.ConnectionId == Context.ConnectionId);
+                if (user != null)
+                {
+                    _connectedUsers.Remove(user);
+                }
+            }
+            if (user != null)
+            {
+                Console.WriteLine("A client disconnected: " + Context.User);
+            }
+            await base.OnDisconnectedAsync(exception);
         }
 
     }

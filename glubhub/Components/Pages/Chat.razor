@@ -14,6 +14,20 @@
 }
 else
 {
+    <div class="row">
+        <div class="col-4">
+            <table style="width:100%">
+                <ConnectedUsersComponent ConnectedUsers="this.connectedUsers" LogonUserId="this.UserID" />
+
+            </table>
+
+        </div>
+        <div class="col-8">
+        
+
+        </div>
+    </div>
+
     <h3>Velkommen, @userEmail!</h3>
     @if (systemMessages.Count == 0)
     {
@@ -32,9 +46,11 @@ else
 
 @code {
     private readonly List<string> systemMessages = new();
+    private List<ConnectedUser> connectedUsers = new();
     private string userEmail = string.Empty;
     private string? userID;
     private HubConnection? hubConnection;
+
 
     // No auth-state logic here; all user info comes from DbContext via the child component
     private async Task OnUserInfoProvided(ConnectedUser info)
@@ -57,6 +73,8 @@ else
             .Build();
 
         hubConnection.On<string>("ReceiveSystemMessage", RecieveSystemMessage);
+        hubConnection.On<List<ConnectedUser>>("ReceiveSystemMessage", UpdateUserList);
+
 
         await hubConnection.StartAsync();
     }
@@ -67,5 +85,15 @@ else
         {
             systemMessages.Add(message);
         }
+    }
+
+    private void UpdateUserList(List<ConnectedUser> users)
+    {
+        if (users is not null && users.Count > 0)
+        {
+            connectedUsers = users;
+            //StateHasChanged();
+        }
+
     }
 }
