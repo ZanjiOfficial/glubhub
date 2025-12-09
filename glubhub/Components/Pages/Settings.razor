@@ -1,6 +1,16 @@
 ﻿@page "/indstillinger"
 <h3>Fiskeindstillingerne.</h3>
 
+<MapForm OnLocationSaved="HandleLocationSaved" />
 @code {
-
-}
+    private void HandleLocationSelected(Location location)
+    {
+        Console.WriteLine($"User selected: {location.CoordinatesY}, {location.CoordinatesX}");
+    }
+     private void HandleLocationSaved(Location loc)
+    {
+        Console.WriteLine($"Saved location: {loc.CoordinatesY}, {loc.CoordinatesX}, {loc.City}");
+        // Save to database here
+    }
+    }
+    }

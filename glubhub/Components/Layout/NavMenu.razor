@@ -98,6 +98,10 @@
 <MudPaper Width="250px" Class="d-inline-flex py-3" Elevation="0" Square="true" Style="background-color: transparent; box-shadow: none;">
     <MudNavMenu Class="mud-width-full">
         <MudText Typo="Typo.h6" Class="px-4">Glub Hub</MudText>
+        <MudImage ObjectFit="@ImageFit" Height="75" Width="200"
+                  Src="Profile.jpg" Alt="Logo" Elevation="25"
+                  Class="rounded-lg" />
+
         <MudText Typo="Typo.body2" Class="px-4 mud-text-secondary">Dit lystfisker forum</MudText>
         <MudDivider Class="my-2" />
         <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.OtherHouses">Hjem</MudNavLink>
@@ -165,6 +169,13 @@
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    ObjectFit ImageFit = ObjectFit.Cover;
+
+    void SetImageFit(ObjectFit value)
+    {
+        ImageFit = value;
     }
 
 }

@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="LeafletForBlazor" Version="2.2.8.8" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.22" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.22" />
@@ -22,11 +23,6 @@
 
     <PackageReference Include="MudBlazor" Version="8.15.0" />
     <PackageReference Include="Optivem.Framework.Infrastructure.FluentValidation" Version="1.0.23" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Migrations\" />
-
   </ItemGroup>
 
 </Project>
