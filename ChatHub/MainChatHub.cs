@@ -52,5 +52,12 @@ namespace ChatHub
             await base.OnDisconnectedAsync(exception);
         }
 
+        public async Task ForwardMessage(string fromUserId, string toConnectionId, string message)
+        {
+            if (!string.IsNullOrWhiteSpace(toConnectionId))
+            {
+                await Clients.Client(toConnectionId).RecieveMessage(fromUserId, Context.ConnectionId, message);
+            }
+        }
     }
 }

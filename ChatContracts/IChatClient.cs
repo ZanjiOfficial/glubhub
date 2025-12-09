@@ -10,5 +10,7 @@ namespace ChatContracts
     {
         Task RecieveSystemMessage(string message);
         Task UpdateUserList(List<ConnectedUser> users);
+
+        Task RecieveMessage(string fromUserId, string fromConnectionId, string message);
     }
 }

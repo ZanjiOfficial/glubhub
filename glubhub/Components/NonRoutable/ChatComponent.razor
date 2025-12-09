@@ -3,17 +3,17 @@
 {
     <div class="card">
         <div class="card-header">
-        Chat med @ToUser.Email
+            Chat med @ToUser.Email
         </div>
         <div class="overflow-auto" style="min-height: 200px">
-        <ul class="list-group">
+            <ul class="list-group">
                 @foreach(var message in ToUser.Messages)
                 {
-                    var fromUserName = ConnectedUsers.FirstOrDefault(u => u.UserId == message.FromUserId)?.Email;
+                    var fromUsermail = ConnectedUsers.FirstOrDefault(u => u.UserId == message.FromUserId)?.Email;
                     <li class="list-group-item d-flex align-items-start message-item">
                         <div>
                             <b>
-                                @fromUserName
+                                @fromUsermail
                             </b>
                             <br />
                             @message.Message
@@ -22,7 +22,12 @@
                 }
             </ul>
         </div>
+        <div class="card-footer">
+            <input type="text" class="form-control me-2" placeholder="Skriv Din Besked her..." @bind="NewMessage" @bind:event="oninput" @onkeydown="HandleKeyPress" />
+            <button class="btn btn-primary mt-2" @onclick="SendMessage">Send</button>
 
+
+        </div>
     </div>
 }
 
@@ -36,4 +41,36 @@
 
     [Parameter]
     public List<ConnectedUser>? ConnectedUsers { get; set; }
+
+    [Parameter]
+    public HubConnection? HubConnection { get; set; }
+
+    private string NewMessage = string.Empty;
+
+    private async Task SendMessage()
+    {
+        if (HubConnection != null && ToUser != null && !string.IsNullOrWhiteSpace(NewMessage))
+        {
+            //send besked til server
+            await HubConnection.InvokeAsync("ForwardMessage", FromUserId, ToUser.UserId, NewMessage);
+
+            ToUser.Messages.Add(new ChatMessage
+                {
+                    FromUserId = this.FromUserId,
+                    ToUserId = ToUser.UserId,
+                    Message = NewMessage,
+                });
+            NewMessage = string.Empty;
+
+
+        }
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SendMessage();
+        }
+    }
 }

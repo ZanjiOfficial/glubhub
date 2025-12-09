@@ -17,14 +17,28 @@ else
     <div class="row">
         <div class="col-4">
             <table style="width:100%">
-                <ConnectedUsersComponent ConnectedUsers="this.connectedUsers" LogonUserId="this.UserID" />
-
+                <ConnectedUsersComponent ConnectedUsers="this.connectedUsers" LogonUserId="this.UserID"
+                                         OnUserSelected="OnUserSelected" />
+                
             </table>
 
         </div>
         <div class="col-8">
-        
+            <ChatComponent FromUserId="@this.userID"
+                           ToUser="targetUser"
+            ConnectedUsers="this.connectedUsers"
+            HubConnection="this.hubConnection" />
 
+            @if (systemMessages != null && systemMessages.Count > 0)
+            {
+
+                    <ul>
+                        @foreach (var msg in systemMessages)
+                        {
+                            <li>@msg</li>
+                        }
+                     </ul>
+            }
         </div>
     </div>
 
@@ -47,6 +61,7 @@ else
 @code {
     private readonly List<string> systemMessages = new();
     private List<ConnectedUser> connectedUsers = new();
+    private ConnectedUser? targetUser;
     private string userEmail = string.Empty;
     private string? userID;
     private HubConnection? hubConnection;
@@ -64,9 +79,14 @@ else
         }
     }
 
+    private void OnUserSelected(ConnectedUser toUser)
+    {
+        targetUser = toUser;
+    }
+
     private async Task ConnectToServer(string userId, string userName)
     {
-        // Keep a reference to the connection
+
         hubConnection = new HubConnectionBuilder()
             .WithUrl($"https://localhost:7076/chathub?userid={userId}&username={userName}")
             .WithAutomaticReconnect()
@@ -74,6 +94,7 @@ else
 
         hubConnection.On<string>("ReceiveSystemMessage", RecieveSystemMessage);
         hubConnection.On<List<ConnectedUser>>("ReceiveSystemMessage", UpdateUserList);
+        hubConnection.On<string, string, string>("ReceiveMessage", RecieveMessage);
 
 
         await hubConnection.StartAsync();
@@ -95,5 +116,23 @@ else
             //StateHasChanged();
         }
 
+    }
+
+    private void RecieveMessage(string fromUserId, string fromConnectionId, string message)
+    {
+        if (!string.IsNullOrWhiteSpace(fromConnectionId))
+        {
+            var fromUser = connectedUsers.FirstOrDefault(u => u.ConnectionId == fromConnectionId);
+            if (fromUser != null)
+            {
+                fromUser.Messages.Add(new ChatMessage
+                    {
+                        FromUserId = fromUserId,
+                        ToUserId = this.userID,
+                        Message = message
+                    });
+                //StateHasChanged();
+            }
+        }
     }
 }
