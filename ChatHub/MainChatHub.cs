@@ -2,7 +2,7 @@
 using ChatContracts;
 namespace ChatHub
 {
-    public class MainChatHub : Hub
+    public class MainChatHub : Hub<IChatClient> 
     {
         private static readonly object _lock = new object();
         private static List<ConnectedUser> _connectedUsers = new List<ConnectedUser>();
@@ -29,8 +29,8 @@ namespace ChatHub
 
             }
             
-            await Clients.Caller.SendAsync("ReceiveSystemMessage", "Du har forbindelse!");
-            await Clients.All.SendAsync("UpdateUserList", _connectedUsers);
+            await Clients.Caller.RecieveSystemMessage("Du har forbindelse!");
+            await Clients.All.UpdateUserList(_connectedUsers);
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
@@ -47,6 +47,7 @@ namespace ChatHub
             if (user != null)
             {
                 Console.WriteLine("A client disconnected: " + Context.User);
+                await Clients.All.UpdateUserList(_connectedUsers);
             }
             await base.OnDisconnectedAsync(exception);
         }

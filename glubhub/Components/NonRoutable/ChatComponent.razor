@@ -1,0 +1,39 @@
+﻿
+@if(ToUser != null && ConnectedUsers != null && ConnectedUsers.Count > 0)
+{
+    <div class="card">
+        <div class="card-header">
+        Chat med @ToUser.Email
+        </div>
+        <div class="overflow-auto" style="min-height: 200px">
+        <ul class="list-group">
+                @foreach(var message in ToUser.Messages)
+                {
+                    var fromUserName = ConnectedUsers.FirstOrDefault(u => u.UserId == message.FromUserId)?.Email;
+                    <li class="list-group-item d-flex align-items-start message-item">
+                        <div>
+                            <b>
+                                @fromUserName
+                            </b>
+                            <br />
+                            @message.Message
+                        </div>
+                    </li>
+                }
+            </ul>
+        </div>
+
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public string? FromUserId { get; set; }
+
+    [Parameter]
+    public ConnectedUser? ToUser { get; set; }
+
+    [Parameter]
+    public List<ConnectedUser>? ConnectedUsers { get; set; }
+}

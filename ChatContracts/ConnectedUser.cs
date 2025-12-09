@@ -7,6 +7,8 @@
 
         public string? ConnectionId { get; set; }
 
+        public List<ChatMessage> Messages { get; set; } = new List<ChatMessage>();  
+
 
 
     }
