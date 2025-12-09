@@ -1,25 +1,23 @@
-﻿@page "/profileicon"
+﻿@page "/ProfileIcon"
 @inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 
-<img src="~/Profile.jpg" @onclick="OnProfileClick" 
-style="cursor:pointer;" />
 
 @code {
-    private async Task OnProfileClick()
+    protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
         if (user.Identity != null && user.Identity.IsAuthenticated)
         {
-            NavigationManager.NavigateTo("/userprofile");
+            NavigationManager.NavigateTo("/profile");
         }
         else
         {
-            NavigationManager.NavigateTo("/login");
+            NavigationManager.NavigateTo("/Account/Login");
         }
     }
 }

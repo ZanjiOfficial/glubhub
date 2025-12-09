@@ -10,7 +10,17 @@
     .post_container {
         text-align: center;
     }
-
+    .post_grid {
+        display: inline-grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 10px;
+        margin: 50px;
+        margin-top: 20px;
+    }
+    .post_item {
+        padding: 5px;
+        border: solid;
+    }
 </style>
 <MudCard>
     <MudCardHeader>
@@ -44,17 +54,19 @@ else if (!posts.Any())
 }
 else
 {
+    <div class="post_grid">
     <ul>
         @foreach (var post in posts)
         {
-            <li>
-                <h3>@post.Content</h3>
-                <p>@post.Comment</p>
+            <li class="post_item">
+                <h3>@post.Comment</h3>
+                <p>@post.Content</p>
                 <small>Posted on @post.Timestamp.ToString("g")</small>
                 <small>Id: @post.PostId</small>
             </li>
         }
     </ul>
+    </div>
 }
 </div>
 
