@@ -17,27 +17,27 @@ else
     <div class="row">
         <div class="col-4">
             <table style="width:100%">
-                <ConnectedUsersComponent ConnectedUsers="this.connectedUsers" LogonUserId="this.UserID"
-                                         OnUserSelected="OnUserSelected" />
-                
+                <ConnectedUsersComponent ConnectedUsers="this.connectedUsers" LogonUserId="this.userID"
+                OnUserSelected="OnUserSelected" />
+
             </table>
 
         </div>
         <div class="col-8">
             <ChatComponent FromUserId="@this.userID"
-                           ToUser="targetUser"
+            ToUser="targetUser"
             ConnectedUsers="this.connectedUsers"
             HubConnection="this.hubConnection" />
 
             @if (systemMessages != null && systemMessages.Count > 0)
             {
 
-                    <ul>
-                        @foreach (var msg in systemMessages)
-                        {
-                            <li>@msg</li>
-                        }
-                     </ul>
+                <ul>
+                    @foreach (var msg in systemMessages)
+                    {
+                        <li>@msg</li>
+                    }
+                </ul>
             }
         </div>
     </div>
@@ -88,12 +88,12 @@ else
     {
 
         hubConnection = new HubConnectionBuilder()
-            .WithUrl($"https://localhost:7076/chathub?userid={userId}&username={userName}")
+            .WithUrl($"https://localhost:7076/chathub?userId={userId}&username={userName}")
             .WithAutomaticReconnect()
             .Build();
 
         hubConnection.On<string>("ReceiveSystemMessage", RecieveSystemMessage);
-        hubConnection.On<List<ConnectedUser>>("ReceiveSystemMessage", UpdateUserList);
+        hubConnection.On<List<ConnectedUser>>("UpdateUserList", UpdateUserList);
         hubConnection.On<string, string, string>("ReceiveMessage", RecieveMessage);
 
 
@@ -105,6 +105,7 @@ else
         if (!string.IsNullOrEmpty(message))
         {
             systemMessages.Add(message);
+            InvokeAsync(StateHasChanged);
         }
     }
 
@@ -113,7 +114,7 @@ else
         if (users is not null && users.Count > 0)
         {
             connectedUsers = users;
-            //StateHasChanged();
+            InvokeAsync(StateHasChanged);
         }
 
     }
@@ -131,7 +132,8 @@ else
                         ToUserId = this.userID,
                         Message = message
                     });
-                //StateHasChanged();
+                InvokeAsync(StateHasChanged);
+
             }
         }
     }

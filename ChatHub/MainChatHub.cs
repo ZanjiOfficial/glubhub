@@ -20,6 +20,9 @@ namespace ChatHub
 
             lock (_lock)
             {
+                //Fjerne brugeren hvis den allerede eksistere, for at undgå dubletter
+                _connectedUsers.RemoveAll(u => u.UserId == userId);
+
                 _connectedUsers.Add(new ConnectedUser
                 {
                     UserId = userId,
@@ -29,7 +32,7 @@ namespace ChatHub
 
             }
             
-            await Clients.Caller.RecieveSystemMessage("Du har forbindelse!");
+            await Clients.Caller.ReceiveSystemMessage("Du har forbindelse!");
             await Clients.All.UpdateUserList(_connectedUsers);
         }
 
@@ -52,11 +55,32 @@ namespace ChatHub
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task ForwardMessage(string fromUserId, string toConnectionId, string message)
+        public async Task ForwardMessage(string fromUserId, string toUserId, string message)
         {
-            if (!string.IsNullOrWhiteSpace(toConnectionId))
+            Console.WriteLine($"ForwardMessage called: from {fromUserId} to {toUserId}");
+
+            if (!string.IsNullOrWhiteSpace(toUserId))
             {
-                await Clients.Client(toConnectionId).RecieveMessage(fromUserId, Context.ConnectionId, message);
+                ConnectedUser? targetUser;
+                lock (_lock)
+                {
+                    targetUser = _connectedUsers.FirstOrDefault(u => u.UserId == toUserId);
+                }
+
+                if (targetUser != null && !string.IsNullOrWhiteSpace(targetUser.ConnectionId))
+                {
+                    Console.WriteLine($"Sending message to connection: {targetUser.ConnectionId}");
+                    await Clients.Client(targetUser.ConnectionId).ReceiveMessage(fromUserId, Context.ConnectionId, message);
+                }
+                else
+                {
+                    Console.WriteLine($"Target user not found or not connected: {toUserId}");
+                    await Clients.Caller.ReceiveSystemMessage($"Brugeren med ID {toUserId} er ikke online.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("ToUserId is null or empty");
             }
         }
     }
