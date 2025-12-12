@@ -1,6 +1,7 @@
 ﻿@using glubhub.Models
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
 
 @inject IPostRepository<Post> PostRepository
 @inject IFishRepository<Fish> FishRepository
@@ -10,7 +11,9 @@
 @inject ICommentsRepository<Comments> CommentsRepository
 @inject ILikeRepository<Like> LikeRepository
 
-<h4>Share your latest catch</h4>
+
+<h4>Del dine seneste fangst</h4>
+
 
 @if (CurrentUserId is not null)
 {
@@ -18,26 +21,41 @@
         <div class="mb-1">
             <InputText class="form-control"
                        @bind-Value="post.Comment"
-                       placeholder="Short title or comment" />
+                       placeholder="Titel" />
         </div>
 
         <div class="row g-1 mb-1">
             <div class="col">
                 <InputText class="form-control"
                            @bind-Value="post.Location.City"
-                           placeholder="City" />
+                           placeholder="By" />
             </div>
             <div class="col">
                 <InputText class="form-control"
                            @bind-Value="post.Location.Region"
                            placeholder="Region" />
             </div>
+
+
+
+            <button type="button" class="btn btn-outline-primary" @onclick="() => showMap = !showMap">
+                Select Location
+            </button>
+
+            @if (showMap)
+            {
+             <MapForm OnLocationSaved="@OnLocationPicked" />
+
+            }
         </div>
+
+        
+        
 
         <div class="mb-2">
             <InputTextArea class="form-control"
                            @bind-Value="post.Content"
-                           placeholder="Tell us about the catch..." />
+                           placeholder="Fortæl os om fangsten..." />
         </div>
 
         <div class="mb-2">
@@ -46,13 +64,13 @@
 
         <div class="card mb-2 border-0 bg-light">
             <div class="card-body py-2">
-                <div class="fw-semibold small mb-2">Catch details</div>
+                <div class="fw-semibold small mb-2">Fangst detaljer</div>
 
                 <div class="row g-1 mb-2">
                     <div class="col-6">
                         <InputText class="form-control form-control-sm"
                                    @bind-Value="fishSpecies"
-                                   placeholder="Species (e.g. Pike)" />
+                                   placeholder="Fiskeart (fx havørred)" />
                     </div>
                     <div class="col-3">
                         <InputNumber TValue="int?" class="form-control form-control-sm"
@@ -67,15 +85,15 @@
                 </div>
 
                 <div class="mb-2">
-                    <label class="form-label">Techniques</label>
+                    <label class="form-label">Teknik</label>
                     <div class="d-flex">
                         <InputText class="form-control form-control-sm"
                                    @bind-Value="newTechnique"
-                                   placeholder="Add technique" />
+                                   placeholder="Tilføj teknik" />
                         <button type="button"
                                 class="btn btn-sm btn-outline-primary ms-2"
                                 @onclick="AddTechniqueTag">
-                            Add
+                            Tilføj
                         </button>
                     </div>
                     <div class="mt-1">
@@ -94,15 +112,15 @@
                 </div>
 
                 <div class="mb-2">
-                    <label class="form-label">Gear</label>
+                    <label class="form-label">Grej</label>
                     <div class="d-flex">
                         <InputText class="form-control form-control-sm"
                                    @bind-Value="newGear"
-                                   placeholder="Add gear" />
+                                   placeholder="Tilføj grej" />
                         <button type="button"
                                 class="btn btn-sm btn-outline-primary ms-2"
                                 @onclick="AddGearTag">
-                            Add
+                            Tilføj
                         </button>
                     </div>
                     <div class="mt-1">
@@ -113,7 +131,7 @@
                                 <button type="button"
                                         class="btn-close btn-close-white btn-sm ms-1"
                                         @onclick="() => RemoveGearTag(g)"
-                                        aria-label="Remove">
+                                        aria-label="Fjern">
                                 </button>
                             </span>
                         }
@@ -122,19 +140,19 @@
 
                 <InputTextArea class="form-control form-control-sm"
                                @bind-Value="tipsText"
-                               placeholder="Tips for other anglers" />
+                               placeholder="Ekstra tips til andre lystfiskere" />
             </div>
         </div>
 
         <button class="btn btn-primary" disabled="@isSubmitting">
-            @(isSubmitting ? "Posting..." : "Post")
+            @(isSubmitting ? "Deler..." : "Del")
         </button>
     </EditForm>
 }
 else
 {
     <p class="text-muted small">
-        Log in to share your own catch. You can still browse all posts.
+        Log ind for at dele din egen fangst. Du kan stadig browse andres fangster.
     </p>
 }
 
@@ -165,14 +183,17 @@ else
                             @if (p.Location is not null)
                             {
                                 <span class="text-muted">
-                                    @p.Location.City, @p.Location.Region
+                                      @p.Location.City, @p.Location.Region, @p.Location.CoordinatesX, @p.Location.CoordinatesY
                                 </span>
                             }
                         </div>
                         <small class="text-muted">
                             @p.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")
                         </small>
+
+                       
                     </div>
+
 
                     <p class="mt-2 mb-2">@p.Content</p>
 
@@ -181,13 +202,18 @@ else
                         <img src="@p.Picture.Link" class="img-fluid mt-2 rounded" />
                     }
 
+                   
+                        
+
+
+
                     @if (p.Fish is not null || p.Tips is not null)
                     {
                         <div class="small text-muted mb-2">
                             @if (p.Fish is not null)
                             {
                                 <div>
-                                    Fish: @p.Fish.Species (@p.Fish.Length cm, @p.Fish.Weight kg)
+                                    Fisk: @p.Fish.Species (@p.Fish.Length cm, @p.Fish.Weight kg)
                                 </div>
                             }
                             @if (p.Tips is not null)
@@ -221,18 +247,18 @@ else
                         <button class="btn btn-link p-0 small"
                                 @onclick:stopPropagation="true"
                                 @onclick="() => ToggleLikeAsync(p)">
-                            @(p.IsLikedByCurrentUser ? "Unlike" : "Like") (@p.LikeCount)
+                            @(p.IsLikedByCurrentUser ? "Fjern like" : "Like") (@p.LikeCount)
                         </button>
 
                         <button class="btn btn-link p-0 small"
                                 @onclick:stopPropagation="true"
                                 @onclick="() => OpenPost(p.PostId)">
-                            Comment
+                            Kommentar
                         </button>
 
                         <button class="btn btn-link p-0 small"
                                 @onclick:stopPropagation="true">
-                            Share
+                            Del
                         </button>
 
                         @if (CurrentUserId is not null && p.UserId == CurrentUserId.Value)
@@ -240,7 +266,7 @@ else
                             <button class="btn btn-link p-0 text-danger small"
                                     @onclick:stopPropagation="true"
                                     @onclick="() => DeletePostAsync(p)">
-                                Delete
+                                Fjern
                             </button>
                         }
                     </div>
@@ -248,15 +274,26 @@ else
                     @if (openedPostId == p.PostId)
                     {
                         <hr />
-                        <h6 class="small fw-bold">Comments</h6>
+                        <h6 class="small fw-bold">Kommentar</h6>
 
                         @foreach (var c in openedComments)
                         {
-                            <div class="mb-2 small">
-                                <strong>@c.UserId</strong>
-                                <div>@c.Text</div>
+                            <div class="mb-2 small d-flex justify-content-between">
+                                <div>
+                                    <strong>@c.UserId</strong>
+                                    <div>@c.Text</div>
+                                </div>
+
+                                @if (CurrentUserId is not null && c.UserId == CurrentUserId.Value)
+                                {
+                                    <button class="btn btn-link text-danger p-0 small"
+                                            @onclick="() => DeleteCommentAsync(c)">
+                                        Fjern post
+                                    </button>
+                                }
                             </div>
                         }
+
 
                         @if (CurrentUserId is not null)
                         {
@@ -264,14 +301,16 @@ else
                                 <InputTextArea class="form-control form-control-sm mb-1"
                                                @bind-Value="newCommentText"
                                                placeholder="Reply..." />
-                                <button class="btn btn-sm btn-primary" type="submit">
-                                    Reply
+                                <button class="btn btn-sm btn-primary"
+                                        type="submit"
+                                        @onclick:stopPropagation="true">
+                                    Svar
                                 </button>
                             </EditForm>
                         }
                         else
                         {
-                            <p class="small text-muted">Log in to reply.</p>
+                            <p class="small text-muted">Log ind for at svare.</p>
                         }
                     }
 
@@ -286,10 +325,10 @@ else
 {
     <div class="card my-3 border">
         <div class="card-header d-flex justify-content-between">
-            <span>Post details</span>
+            <span>Post detaljer</span>
             <button class="btn btn-sm btn-outline-secondary"
                     @onclick="() => selectedPost = null">
-                Close
+                Luk
             </button>
         </div>
         <div class="card-body">
@@ -298,7 +337,7 @@ else
 
             <hr />
 
-            <h6>Comments</h6>
+            <h6>Kommentare</h6>
             @foreach (var c in selectedComments)
             {
                 <div class="mb-2">
@@ -314,7 +353,7 @@ else
 @code {
     private Post post = new()
     {
-        Location = new Location("", "", "", SpotType.Lake, 0, 0, 0)
+        Location = new Location("", "", "", SpotType.Sø, 0, 0, 0)
     };
 
     private List<Post> posts = new();
@@ -376,7 +415,6 @@ else
         }
     }
 
-
     private void OnImageSelected(InputFileChangeEventArgs e)
     {
         imageFile = e.File;
@@ -430,7 +468,9 @@ else
         }
 
         openedPostId = postId;
-        openedComments = (await CommentRepository.GetByPostAsync(postId)).ToList();
+        openedComments = (await CommentRepository.GetByPostAsync(postId))
+            .OrderBy(c => c.Timestamp)
+            .ToList();
         newCommentText = string.Empty;
     }
 
@@ -452,6 +492,17 @@ else
 
         openedComments.Add(comment);
         newCommentText = string.Empty;
+    }
+
+    private async Task DeleteCommentAsync(Comments comment)
+    {
+        if (CurrentUserId is null || comment.UserId != CurrentUserId.Value)
+            return;
+
+        await CommentRepository.DeleteAsync(comment);
+        await CommentRepository.SaveChangesAsync();
+
+        openedComments.Remove(comment);
     }
 
     private async Task<string?> SaveImageAsync()
@@ -504,7 +555,7 @@ else
     {
         if (CurrentUserId is null)
         {
-            statusMessage = "You must be logged in to create a post.";
+            statusMessage = "Log ind for at kunne post.";
             return;
         }
 
@@ -512,7 +563,7 @@ else
         {
             if (string.IsNullOrWhiteSpace(post.Content))
             {
-                statusMessage = "Please write something before posting.";
+                statusMessage = "Udfyld felterne for at kunne post.";
                 return;
             }
 
@@ -572,7 +623,7 @@ else
             // reset
             post = new Post
             {
-                Location = new Location("", "", "", SpotType.Lake, 0, 0, 0)
+                Location = new Location("", "", "", SpotType.Sø, 0, 0, 0)
             };
             fishSpecies = null;
             fishLength = null;
@@ -584,7 +635,7 @@ else
             tipsText = null;
             imageFile = null;
 
-            statusMessage = "Post created!";
+            statusMessage = "Post Lavet!";
         }
         catch (Exception ex)
         {
@@ -600,7 +651,7 @@ else
     {
         if (p is null || CurrentUserId is null)
         {
-            statusMessage = "You must be logged in to delete posts.";
+            statusMessage = "Log ind for at kunne slette posts.";
             return;
         }
 
@@ -608,18 +659,27 @@ else
         {
             if (p.UserId != CurrentUserId.Value)
             {
-                statusMessage = "You can only delete your own posts.";
+                statusMessage = "Du kan kun slette dine egne posts.";
                 return;
             }
 
             await PostRepository.DeleteAsync(p.PostId, CurrentUserId.Value);
             posts.Remove(p);
 
-            statusMessage = "Post deleted.";
+            statusMessage = "Post slettet.";
         }
         catch (Exception ex)
         {
-            statusMessage = $"Failed to delete post: {ex.Message}";
+            statusMessage = $"Kunne ikke slette posts: {ex.Message}";
         }
     }
+    private bool showMap = false;
+
+    private void OnLocationPicked(Location loc)
+    {
+        post.Location = loc;
+        showMap = false;     
+        StateHasChanged();
+    }
 }
+

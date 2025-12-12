@@ -60,7 +60,7 @@ namespace glubhub
 
             builder.Services.AddScoped<IdentityRedirectManager>();
 
-            
+
 
             builder.Services.AddAuthentication(options =>
                 {
@@ -100,6 +100,8 @@ namespace glubhub
             builder.Services.AddHttpClient<WeatherService>();
             builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
             builder.Services.AddMudServices();
+          
+
 
 
 
@@ -107,7 +109,7 @@ namespace glubhub
 
             var app = builder.Build();
 
-            
+
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error", createScopeForErrors: true);
