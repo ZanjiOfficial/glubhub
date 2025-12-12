@@ -7,7 +7,7 @@ namespace glubhub.Persistent.Interfaces
         Task<IEnumerable<T>> GetAllAsync();
         Task AddSync(T entity);
         void Update(T entity);
-        void Delete(T entity);
+        Task DeleteAsync(T entity);
         Task<IEnumerable<T>> GetByPostAsync(int postId);
         Task SaveChangesAsync();
     }

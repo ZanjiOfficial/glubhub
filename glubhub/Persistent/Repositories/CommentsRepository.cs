@@ -23,11 +23,6 @@ namespace glubhub.Persistent.Repositories
             await _context.AddAsync(entity);
         }
 
-        public void Delete(T entity)
-        {
-            _context.Remove(entity);
-        }
-
         public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();
@@ -47,14 +42,15 @@ namespace glubhub.Persistent.Repositories
         {
             _dbSet.Update(entity);
         }
+        public Task DeleteAsync(T entity)
+        {
+            _context.Set<T>().Remove(entity);
+            return Task.CompletedTask;
+        }
+
         public async Task<IEnumerable<T>> GetByPostAsync(int postId)
         {
             return await _dbSet.Where(c => c.PostId == postId).ToListAsync();
-        }
-
-        public Task<IEnumerable<T>> GetByPostAsync()
-        {
-            throw new NotImplementedException();
         }
     }
 }
