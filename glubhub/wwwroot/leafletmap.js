@@ -13,14 +13,17 @@
 
     let marker = null;
 
-    // Handle user click
+    
     map.on('click', function (e) {
         const { lat, lng } = e.latlng;
 
         if (marker) map.removeLayer(marker);
         marker = L.marker([lat, lng]).addTo(map);
 
-        // Call Blazor component
+       
         dotNetObject.invokeMethodAsync('SetCoordinates', lat, lng);
     });
+
+
+
 }

@@ -5,15 +5,15 @@
 
 <MudPaper Class="p-4">
     <div style="display:flex; flex-direction:row; gap:20px;">
-        <!-- Map -->
+       
         <div id="@MapId" style="flex:1; height:500px;"></div>
 
-        <!-- Form -->
+        
         <MudForm @ref="form">
             <MudTextField Label="Region" @bind-Value="location.Region" Required="true" />
-            <MudTextField Label="Municipality" @bind-Value="location.Municipality" Required="true" />
-            <MudTextField Label="City" @bind-Value="location.City" Required="true" />
-            <MudSelect Label="Spot Type" @bind-Value="location.SpotType" Required="true">
+            <MudTextField Label="Kommune" @bind-Value="location.Municipality" Required="true" />
+            <MudTextField Label="By" @bind-Value="location.City" Required="true" />
+            <MudSelect Label="Type" @bind-Value="location.SpotType" Required="true">
                 @foreach (var type in Enum.GetValues<SpotType>())
                 {
                     <MudSelectItem Value="type">@type</MudSelectItem>
