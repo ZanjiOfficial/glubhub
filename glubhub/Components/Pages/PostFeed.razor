@@ -1,6 +1,7 @@
 ﻿@using glubhub.Models
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
 
 @inject IPostRepository<Post> PostRepository
 @inject IFishRepository<Fish> FishRepository
@@ -9,6 +10,7 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ICommentsRepository<Comments> CommentsRepository
 @inject ILikeRepository<Like> LikeRepository
+
 
 <h4>Share your latest catch</h4>
 
@@ -32,7 +34,22 @@
                            @bind-Value="post.Location.Region"
                            placeholder="Region" />
             </div>
+
+
+
+            <button type="button" class="btn btn-outline-primary" @onclick="() => showMap = !showMap">
+                Select Location
+            </button>
+
+            @if (showMap)
+            {
+             <MapForm OnLocationSaved="@OnLocationPicked" />
+
+            }
         </div>
+
+        
+        
 
         <div class="mb-2">
             <InputTextArea class="form-control"
@@ -165,14 +182,17 @@ else
                             @if (p.Location is not null)
                             {
                                 <span class="text-muted">
-                                    @p.Location.City, @p.Location.Region
+                                      @p.Location.City, @p.Location.Region, @p.Location.CoordinatesX, @p.Location.CoordinatesY
                                 </span>
                             }
                         </div>
                         <small class="text-muted">
                             @p.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")
                         </small>
+
+                       
                     </div>
+
 
                     <p class="mt-2 mb-2">@p.Content</p>
 
@@ -180,6 +200,11 @@ else
                     {
                         <img src="@p.Picture.Link" class="img-fluid mt-2 rounded" />
                     }
+
+                   
+                        
+
+
 
                     @if (p.Fish is not null || p.Tips is not null)
                     {
@@ -622,4 +647,13 @@ else
             statusMessage = $"Failed to delete post: {ex.Message}";
         }
     }
+    private bool showMap = false;
+
+    private void OnLocationPicked(Location loc)
+    {
+        post.Location = loc;
+        showMap = false;     
+        StateHasChanged();
+    }
 }
+
