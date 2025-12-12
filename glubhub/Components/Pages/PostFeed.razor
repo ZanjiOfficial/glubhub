@@ -22,32 +22,18 @@
                        @bind-Value="post.Comment"
                        placeholder="Short title or comment" />
         </div>
-
         <div class="row g-1 mb-1">
-            <div class="col">
-                <InputText class="form-control"
-                           @bind-Value="post.Location.City"
-                           placeholder="City" />
-            </div>
-            <div class="col">
-                <InputText class="form-control"
-                           @bind-Value="post.Location.Region"
-                           placeholder="Region" />
-            </div>
-                    
-
-
+          
             <button type="button" class="btn btn-outline-primary" @onclick="() => showMap = !showMap">
-                Select Location
+                Vælg din fiske lokation
             </button>
 
             @if (showMap)
             {
-             <MapForm OnLocationSaved="@OnLocationPicked" />
+                <MapForm OnLocationSaved="@OnLocationPicked" />
 
             }
         </div>
-
         
         
 

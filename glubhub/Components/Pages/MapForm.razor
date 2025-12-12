@@ -5,10 +5,10 @@
 
 <MudPaper Class="p-4">
     <div style="display:flex; flex-direction:row; gap:20px;">
-       
+
         <div id="@MapId" style="flex:1; height:500px;"></div>
 
-        
+
         <MudForm @ref="form">
             <MudTextField Label="Region" @bind-Value="location.Region" Required="true" />
             <MudTextField Label="Kommune" @bind-Value="location.Municipality" Required="true" />
@@ -63,7 +63,7 @@
         location.CoordinatesY = lat;
         location.CoordinatesX = lng;
 
-        StateHasChanged(); 
+        StateHasChanged();
     }
 
     private async Task SaveLocation()
