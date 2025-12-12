@@ -1,0 +1,88 @@
+﻿@using glubhub.Models
+@using MudBlazor
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<MudPaper Class="p-4">
+    <div style="display:flex; flex-direction:row; gap:20px;">
+       
+        <div id="@MapId" style="flex:1; height:500px;"></div>
+
+        
+        <MudForm @ref="form">
+            <MudTextField Label="Region" @bind-Value="location.Region" Required="true" />
+            <MudTextField Label="Kommune" @bind-Value="location.Municipality" Required="true" />
+            <MudTextField Label="By" @bind-Value="location.City" Required="true" />
+            <MudSelect Label="Type" @bind-Value="location.SpotType" Required="true">
+                @foreach (var type in Enum.GetValues<SpotType>())
+                {
+                    <MudSelectItem Value="type">@type</MudSelectItem>
+                }
+            </MudSelect>
+            <MudTextField Label="Breddegrad" @bind-Value="location.CoordinatesY" Disabled="true" />
+            <MudTextField Label="Længdegrad" @bind-Value="location.CoordinatesX" Disabled="true" />
+            <MudButton OnClick="SaveLocation">Gem Lokation</MudButton>
+        </MudForm>
+    </div>
+</MudPaper>
+
+@code {
+    [Parameter] public EventCallback<Location> OnLocationSaved { get; set; }
+
+    private IJSObjectReference? module;
+    private MudForm? form;
+    private string MapId { get; set; } = "mapComponent";
+
+    private Location location = new Location(
+        region: "",
+        municipality: "",
+        city: "",
+        spotType: SpotType.Sø,
+        coordinatesY: 0,
+        coordinatesX: 0,
+        locationId: 0
+    );
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                "import", new object[] { "./leafletmap.js" });
+
+            if (module != null)
+            {
+                await module.InvokeVoidAsync("load_map", MapId, 0, 0, 2, DotNetObjectReference.Create(this));
+            }
+        }
+    }
+
+    [JSInvokable]
+    public void SetCoordinates(double lat, double lng)
+    {
+        location.CoordinatesY = lat;
+        location.CoordinatesX = lng;
+
+        StateHasChanged(); 
+    }
+
+    private async Task SaveLocation()
+    {
+        if (form != null)
+        {
+            await form.Validate();
+            if (form.IsValid)
+            {
+                await OnLocationSaved.InvokeAsync(location);
+            }
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module != null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+}

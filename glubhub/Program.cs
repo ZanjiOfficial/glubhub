@@ -98,6 +98,8 @@ namespace glubhub
             builder.Services.AddHttpClient<WeatherService>();
             builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
             builder.Services.AddMudServices();
+          
+
 
 
 
