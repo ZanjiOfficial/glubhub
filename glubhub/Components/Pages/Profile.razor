@@ -9,7 +9,7 @@
 {
     <p>Loading profile...</p>
 }
-else if (!posts.any())
+else if (!posts.Any())
 {
     <p>No posts found yet.</p>
 }
@@ -19,13 +19,15 @@ else
         @foreach (var post in posts)
         {
             <li>
-                <h4>@post.Title</h4>
+                <h4>@post.Comment</h4>
                 <p>@post.Content</p>
-                <small>Posted on @post.CreatedAt.ToString("g")</small>
+                <small>Posted on @post.Timestamp.ToString("g")</small>
             </li>
         }
     </ul>
 }
+
+
 
 @code {
     private List<Post>? posts;
@@ -34,20 +36,27 @@ else
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
+
+
         if (user.Identity != null && user.Identity.IsAuthenticated)
         {
-            var userId = user.FindFirst(c => c.Type == "sub")?.Value;
-            posts = Db.Posts
-                .Where(p => p.UserId == userId)
-                .OrderByDescending(p => p.CreatedAt)
-                .ToList();
-        }
-        else
-        {
-            posts = new List<Post>();
+            var userIdString = user.FindFirst(c => c.Type == "sub")?.Value;
+
+            if (Guid.TryParse(userIdString, out var userId))
+            {
+                posts = Db.Posts
+                    .Where(p => p.UserId == userId)   // compare Guid to Guid
+                    .OrderByDescending(p => p.Timestamp)
+                    .ToList();
+            }
+            else
+            {
+                posts = new List<Post>();
+            }
         }
     }
 }
+
 
 
 @* <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
@@ -1075,3 +1084,4 @@ else
         </div>
     </div>
 </div> *@ 
+

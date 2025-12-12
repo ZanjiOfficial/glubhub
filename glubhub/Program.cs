@@ -58,7 +58,7 @@ namespace glubhub
 
             builder.Services.AddScoped<IdentityRedirectManager>();
 
-            
+
 
             builder.Services.AddAuthentication(options =>
                 {
@@ -107,7 +107,7 @@ namespace glubhub
 
             var app = builder.Build();
 
-            
+
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error", createScopeForErrors: true);
