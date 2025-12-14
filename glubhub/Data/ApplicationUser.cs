@@ -21,10 +21,10 @@ namespace glubhub.Models
 
         public ApplicationUser() { }
 
-        public ApplicationUser(string UserName, string profilePicture)
+        public ApplicationUser(string userName, string profilePicture)
         {
             //bruger predefined UserName property fra IdentityUser
-            UserName = UserName;
+            UserName = userName;
             ProfilePicture = profilePicture;
         }
     }
