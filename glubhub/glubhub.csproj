@@ -25,4 +25,8 @@
     <PackageReference Include="Optivem.Framework.Infrastructure.FluentValidation" Version="1.0.23" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ChatContracts\ChatContracts.csproj" />
+  </ItemGroup>
+
 </Project>

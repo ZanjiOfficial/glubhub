@@ -1,0 +1,86 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using ChatContracts
+@using System.Security.Claims
+@using glubhub.Data
+
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ApplicationDbContext Db
+
+<h3>UserInfoCollectionComponent</h3>
+
+@* @if (userInfo != null)
+{
+     <EditForm Model="userInfo" OnValidSubmit="SaveUserInfo">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row mb-3">
+            <div class="col-3">
+                <label for="userName" class="col-form-label">User Name</label>
+            </div>
+            <div class="col-9">
+                <InputText id="userName" class="form-control" @bind-Value="userInfo.UserName" />
+                <ValidationMessage For="@(() => userInfo.UserName)" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-3">
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+            <div class="col-9">
+
+            </div>
+        </div>
+
+
+     </EditForm>
+}
+ *@
+
+@code {
+
+    [Parameter] public EventCallback<ConnectedUser> OnUserInfoSaved { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var principal = state.User;
+
+        if (principal?.Identity?.IsAuthenticated != true)
+        {
+            return;
+        }
+
+        var email =
+            principal.FindFirst(ClaimTypes.Email)?.Value
+            ?? principal.FindFirst("email")?.Value
+            ?? principal.FindFirst("emails")?.Value // AAD sometimes uses "emails"
+            ?? string.Empty;
+
+        if (string.IsNullOrEmpty(email))
+        {
+            email = "Unknown";
+        }
+
+        var normalized = email.ToUpperInvariant();
+
+
+        var userEntity = await Db.Users.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.NormalizedEmail == normalized);
+        
+        if (userEntity is null)
+            return;
+
+        var info = new ConnectedUser
+        {
+            UserId = userEntity.Id,
+            Email = userEntity.Email ?? email
+        };
+
+        await OnUserInfoSaved.InvokeAsync(info);
+
+    }
+}
+

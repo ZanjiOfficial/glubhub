@@ -2,56 +2,139 @@
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.Authorization
-@using glubhub.Models
-@using glubhub.Persistent.Interfaces
-
+@using ChatContracts
+@attribute [Authorize]
 
 <PageTitle>Fiskebeskeder</PageTitle>
 
-@if (systemMessages.Count == 0)
+@if (string.IsNullOrEmpty(userEmail))
 {
-    <p>Der er ingen beskeder.</p>
+    <p>Henter brugeroplysninger...</p>
+    <UserInfoCollectionComponent OnUserInfoSaved="OnUserInfoProvided" />
 }
 else
 {
-    <ul>
-        @foreach (var message in systemMessages)
-        {
-            <li>@message</li>
-        }
-    </ul>
+    <div class="row">
+        <div class="col-4">
+            <table style="width:100%">
+                <ConnectedUsersComponent ConnectedUsers="this.connectedUsers" LogonUserId="this.userID"
+                OnUserSelected="OnUserSelected" />
+
+            </table>
+
+        </div>
+        <div class="col-8">
+            <ChatComponent FromUserId="@this.userID"
+            ToUser="targetUser"
+            ConnectedUsers="this.connectedUsers"
+            HubConnection="this.hubConnection" />
+
+            @if (systemMessages != null && systemMessages.Count > 0)
+            {
+
+                <ul>
+                    @foreach (var msg in systemMessages)
+                    {
+                        <li>@msg</li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
+@*     <h3>Velkommen, @userEmail!</h3>
+    @if (systemMessages.Count == 0)
+    {
+        <p>Der er ingen beskeder.</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var message in systemMessages)
+            {
+                <li>@message</li>
+            }
+        </ul>
+    } *@
 }
 
-
-
-
 @code {
+    private readonly List<string> systemMessages = new();
+    private List<ConnectedUser> connectedUsers = new();
+    private ConnectedUser? targetUser;
+    private string userEmail = string.Empty;
+    private string? userID;
+    private HubConnection? hubConnection;
 
-    private List<string> systemMessages = new List<string>();
 
-    protected override async Task OnInitializedAsync()
+    // No auth-state logic here; all user info comes from DbContext via the child component
+    private async Task OnUserInfoProvided(ConnectedUser info)
     {
-        var hubconnection = new HubConnectionBuilder()
-            .WithUrl($"https://localhost:7076/chathub")
+        userID = info.UserId;
+        userEmail = info.Email;
+
+        if (!string.IsNullOrWhiteSpace(userID) && !string.IsNullOrWhiteSpace(userEmail))
+        {
+            await ConnectToServer(userID, userEmail);
+        }
+    }
+
+    private void OnUserSelected(ConnectedUser toUser)
+    {
+        targetUser = toUser;
+    }
+
+    private async Task ConnectToServer(string userId, string userName)
+    {
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl($"https://localhost:7076/chathub?userId={userId}&username={userName}")
             .WithAutomaticReconnect()
             .Build();
 
-        hubconnection.On<string>("ReceiveSystemMessage", RecieveSystemMessage);
+        hubConnection.On<string>("ReceiveSystemMessage", RecieveSystemMessage);
+        hubConnection.On<List<ConnectedUser>>("UpdateUserList", UpdateUserList);
+        hubConnection.On<string, string, string>("ReceiveMessage", RecieveMessage);
 
-        await hubconnection.StartAsync();
+
+        await hubConnection.StartAsync();
     }
-
 
     private void RecieveSystemMessage(string message)
     {
         if (!string.IsNullOrEmpty(message))
         {
             systemMessages.Add(message);
-            StateHasChanged(); //ikke nødvendigt, men hvis vi ændre rendermode til noget andet end InteractiveServer.
+            InvokeAsync(StateHasChanged);
         }
     }
 
+    private void UpdateUserList(List<ConnectedUser> users)
+    {
+        if (users is not null && users.Count > 0)
+        {
+            connectedUsers = users;
+            InvokeAsync(StateHasChanged);
+        }
+
+    }
+
+    private void RecieveMessage(string fromUserId, string fromConnectionId, string message)
+    {
+        if (!string.IsNullOrWhiteSpace(fromConnectionId))
+        {
+            var fromUser = connectedUsers.FirstOrDefault(u => u.ConnectionId == fromConnectionId);
+            if (fromUser != null)
+            {
+                fromUser.Messages.Add(new ChatMessage
+                    {
+                        FromUserId = fromUserId,
+                        ToUserId = this.userID,
+                        Message = message
+                    });
+                InvokeAsync(StateHasChanged);
+
+            }
+        }
+    }
 }
-
-
