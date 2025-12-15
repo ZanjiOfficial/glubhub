@@ -1,6 +1,7 @@
 ﻿@using glubhub.Models
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
 
 @inject IPostRepository<Post> PostRepository
 @inject IFishRepository<Fish> FishRepository
@@ -10,7 +11,8 @@
 @inject ICommentsRepository<Comments> CommentsRepository
 @inject ILikeRepository<Like> LikeRepository
 
-<h4>Del dine seneste fangst</h4>
+
+<h4>Del din seneste fangst</h4>
 
 @if (CurrentUserId is not null)
 {
@@ -18,11 +20,11 @@
         <div class="mb-1">
             <InputText class="form-control"
                        @bind-Value="post.Comment"
-                       placeholder="Titel" />
+                       placeholder="Kort titel eller kommentar" />
         </div>
 
         <div class="row g-1 mb-1">
-       
+           
             <button type="button" class="btn btn-outline-primary" @onclick="() => showMap = !showMap">
                 Vælg lokation
             </button>
@@ -35,19 +37,27 @@
         </div>
 
 
+
+
+        <div class="mb-2">
+            <InputTextArea class="form-control"
+                           @bind-Value="post.Content"
+                           placeholder="Fortæl os om fangsten..." />
+        </div>
+
         <div class="mb-2">
             <InputFile OnChange="OnImageSelected" />
         </div>
 
         <div class="card mb-2 border-0 bg-light">
             <div class="card-body py-2">
-                <div class="fw-semibold small mb-2">Fangst detaljer</div>
+                <div class="fw-semibold small mb-2">Fang detaljer</div>
 
                 <div class="row g-1 mb-2">
                     <div class="col-6">
                         <InputText class="form-control form-control-sm"
                                    @bind-Value="fishSpecies"
-                                   placeholder="Fiskeart (fx havørred)" />
+                                   placeholder="Fiskearter (fx Havørred)" />
                     </div>
                     <div class="col-3">
                         <InputNumber TValue="int?" class="form-control form-control-sm"
@@ -62,7 +72,7 @@
                 </div>
 
                 <div class="mb-2">
-                    <label class="form-label">Teknik</label>
+                    <label class="form-label">Teknikker</label>
                     <div class="d-flex">
                         <InputText class="form-control form-control-sm"
                                    @bind-Value="newTechnique"
@@ -70,7 +80,7 @@
                         <button type="button"
                                 class="btn btn-sm btn-outline-primary ms-2"
                                 @onclick="AddTechniqueTag">
-                            Tilføj
+                            Add
                         </button>
                     </div>
                     <div class="mt-1">
@@ -81,7 +91,7 @@
                                 <button type="button"
                                         class="btn-close btn-close-white btn-sm ms-1"
                                         @onclick="() => RemoveTechniqueTag(t)"
-                                        aria-label="Remove">
+                                        aria-label="Fjern teknik">
                                 </button>
                             </span>
                         }
@@ -97,7 +107,7 @@
                         <button type="button"
                                 class="btn btn-sm btn-outline-primary ms-2"
                                 @onclick="AddGearTag">
-                            Tilføj
+                            Add
                         </button>
                     </div>
                     <div class="mt-1">
@@ -108,7 +118,7 @@
                                 <button type="button"
                                         class="btn-close btn-close-white btn-sm ms-1"
                                         @onclick="() => RemoveGearTag(g)"
-                                        aria-label="Fjern">
+                                        aria-label="Fjern tag">
                                 </button>
                             </span>
                         }
@@ -117,19 +127,19 @@
 
                 <InputTextArea class="form-control form-control-sm"
                                @bind-Value="tipsText"
-                               placeholder="Ekstra tips til andre lystfiskere" />
+                               placeholder="Tips til andre fiskere" />
             </div>
         </div>
 
         <button class="btn btn-primary" disabled="@isSubmitting">
-            @(isSubmitting ? "Deler..." : "Del")
+            @(isSubmitting ? "Slår op..." : "Del")
         </button>
     </EditForm>
 }
 else
 {
     <p class="text-muted small">
-        Log ind for at dele din egen fangst. Du kan stadig browse andres fangster.
+        Log ind for at dele din egen fangst. Du kan stadig se alle opslag
     </p>
 }
 
@@ -160,14 +170,17 @@ else
                             @if (p.Location is not null)
                             {
                                 <span class="text-muted">
-                                    @p.Location.City, @p.Location.Region
+                                    @p.Location.City, @p.Location.Region, @p.Location.CoordinatesX, @p.Location.CoordinatesY
                                 </span>
                             }
                         </div>
                         <small class="text-muted">
                             @p.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")
                         </small>
+
+
                     </div>
+
 
                     <p class="mt-2 mb-2">@p.Content</p>
 
@@ -176,13 +189,18 @@ else
                         <img src="@p.Picture.Link" class="img-fluid mt-2 rounded" />
                     }
 
+
+
+
+
+
                     @if (p.Fish is not null || p.Tips is not null)
                     {
                         <div class="small text-muted mb-2">
                             @if (p.Fish is not null)
                             {
                                 <div>
-                                    Fisk: @p.Fish.Species (@p.Fish.Length cm, @p.Fish.Weight kg)
+                                    Fish: @p.Fish.Species (@p.Fish.Length cm, @p.Fish.Weight kg)
                                 </div>
                             }
                             @if (p.Tips is not null)
@@ -222,12 +240,12 @@ else
                         <button class="btn btn-link p-0 small"
                                 @onclick:stopPropagation="true"
                                 @onclick="() => OpenPost(p.PostId)">
-                            Kommentar
+                            Kommenter
                         </button>
 
                         <button class="btn btn-link p-0 small"
                                 @onclick:stopPropagation="true">
-                            Del
+                            Del opslag
                         </button>
 
                         @if (CurrentUserId is not null && p.UserId == CurrentUserId.Value)
@@ -235,7 +253,7 @@ else
                             <button class="btn btn-link p-0 text-danger small"
                                     @onclick:stopPropagation="true"
                                     @onclick="() => DeletePostAsync(p)">
-                                Fjern
+                                Fjern opslag
                             </button>
                         }
                     </div>
@@ -243,36 +261,23 @@ else
                     @if (openedPostId == p.PostId)
                     {
                         <hr />
-                        <h6 class="small fw-bold">Kommentar</h6>
+                        <h6 class="small fw-bold">Kommentare</h6>
 
                         @foreach (var c in openedComments)
                         {
-                            <div class="mb-2 small d-flex justify-content-between">
-                                <div>
-                                    <strong>@c.UserId</strong>
-                                    <div>@c.Text</div>
-                                </div>
-
-                                @if (CurrentUserId is not null && c.UserId == CurrentUserId.Value)
-                                {
-                                    <button class="btn btn-link text-danger p-0 small"
-                                            @onclick="() => DeleteCommentAsync(c)">
-                                        Fjern post
-                                    </button>
-                                }
+                            <div class="mb-2 small">
+                                <strong>@c.UserId</strong>
+                                <div>@c.Text</div>
                             </div>
                         }
-
 
                         @if (CurrentUserId is not null)
                         {
                             <EditForm OnValidSubmit="() => AddCommentAsync(p.PostId)">
                                 <InputTextArea class="form-control form-control-sm mb-1"
                                                @bind-Value="newCommentText"
-                                               placeholder="Reply..." />
-                                <button class="btn btn-sm btn-primary"
-                                        type="submit"
-                                        @onclick:stopPropagation="true">
+                                               placeholder="Svar..." />
+                                <button class="btn btn-sm btn-primary" type="submit">
                                     Svar
                                 </button>
                             </EditForm>
@@ -290,14 +295,14 @@ else
     </div>
 }
 
-@if (selectedPost is not null)
+@* @if (selectedPost is not null)
 {
     <div class="card my-3 border">
         <div class="card-header d-flex justify-content-between">
-            <span>Post detaljer</span>
+            <span>Post details</span>
             <button class="btn btn-sm btn-outline-secondary"
                     @onclick="() => selectedPost = null">
-                Luk
+                Close
             </button>
         </div>
         <div class="card-body">
@@ -306,7 +311,7 @@ else
 
             <hr />
 
-            <h6>Kommentare</h6>
+            <h6>Comments</h6>
             @foreach (var c in selectedComments)
             {
                 <div class="mb-2">
@@ -316,7 +321,7 @@ else
             }
         </div>
     </div>
-}
+} *@
 
 
 @code {
@@ -384,6 +389,7 @@ else
         }
     }
 
+
     private void OnImageSelected(InputFileChangeEventArgs e)
     {
         imageFile = e.File;
@@ -437,9 +443,7 @@ else
         }
 
         openedPostId = postId;
-        openedComments = (await CommentRepository.GetByPostAsync(postId))
-            .OrderBy(c => c.Timestamp)
-            .ToList();
+        openedComments = (await CommentRepository.GetByPostAsync(postId)).ToList();
         newCommentText = string.Empty;
     }
 
@@ -461,17 +465,6 @@ else
 
         openedComments.Add(comment);
         newCommentText = string.Empty;
-    }
-
-    private async Task DeleteCommentAsync(Comments comment)
-    {
-        if (CurrentUserId is null || comment.UserId != CurrentUserId.Value)
-            return;
-
-        await CommentRepository.DeleteAsync(comment);
-        await CommentRepository.SaveChangesAsync();
-
-        openedComments.Remove(comment);
     }
 
     private async Task<string?> SaveImageAsync()
@@ -524,7 +517,7 @@ else
     {
         if (CurrentUserId is null)
         {
-            statusMessage = "Log ind for at kunne post.";
+            statusMessage = "You must be logged in to create a post.";
             return;
         }
 
@@ -532,7 +525,7 @@ else
         {
             if (string.IsNullOrWhiteSpace(post.Content))
             {
-                statusMessage = "Udfyld felterne for at kunne post.";
+                statusMessage = "Please write something before posting.";
                 return;
             }
 
@@ -604,7 +597,7 @@ else
             tipsText = null;
             imageFile = null;
 
-            statusMessage = "Post Lavet!";
+            statusMessage = "Post created!";
         }
         catch (Exception ex)
         {
@@ -620,7 +613,7 @@ else
     {
         if (p is null || CurrentUserId is null)
         {
-            statusMessage = "Log ind for at kunne slette posts.";
+            statusMessage = "You must be logged in to delete posts.";
             return;
         }
 
@@ -628,18 +621,18 @@ else
         {
             if (p.UserId != CurrentUserId.Value)
             {
-                statusMessage = "Du kan kun slette dine egne posts.";
+                statusMessage = "You can only delete your own posts.";
                 return;
             }
 
             await PostRepository.DeleteAsync(p.PostId, CurrentUserId.Value);
             posts.Remove(p);
 
-            statusMessage = "Post slettet.";
+            statusMessage = "Post deleted.";
         }
         catch (Exception ex)
         {
-            statusMessage = $"Kunne ikke slette posts: {ex.Message}";
+            statusMessage = $"Failed to delete post: {ex.Message}";
         }
     }
     private bool showMap = false;
