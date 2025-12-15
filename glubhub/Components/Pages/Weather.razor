@@ -6,10 +6,10 @@
 @inject WeatherService WeatherService
 @rendermode InteractiveServer
 
-<h3>Weather</h3>
+<h3>Vejrudsigt</h3>
 
-<input @bind="City" @bind:event="oninput" placeholder="Enter city..." />
-<button type="button" class="btn btn-primary" @onclick="@OnInitializedAsync">Get Weather</button>
+<input @bind="City" @bind:event="oninput" placeholder="Indtast en by..." />
+<button type="button" class="btn btn-primary" @onclick="@OnInitializedAsync">Hent Vejrudsigt</button>
 
 @if (!string.IsNullOrEmpty(ErrorMessage))
 {
@@ -18,10 +18,10 @@
 
 @if (IsLoading)
 {
-    <p>Loader forecast…</p>
+    <p>Indlæser vejrudsigt…</p>
 }
 
-<h3 class="mt-5">5-Day Forecast</h3>
+<h3 class="mt-5">Se vejrudsigten for de næste 5 dage</h3>
 
 <div class="row row-cols-1 row-cols-md-5 g-4 mt-2">
     @if (!IsLoading && Forecast != null && Forecast.Any())
