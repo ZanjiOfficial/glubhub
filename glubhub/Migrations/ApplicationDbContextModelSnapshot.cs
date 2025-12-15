@@ -257,6 +257,46 @@ namespace glubhub.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("glubhub.Models.Comments", b =>
+                {
+                    b.Property<int>("CommentsId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommentsId"));
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PostId1")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserId1")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("CommentsId");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("PostId1")
+                        .IsUnique()
+                        .HasFilter("[PostId1] IS NOT NULL");
+
+                    b.HasIndex("UserId1");
+
+                    b.ToTable("Comments");
+                });
+
             modelBuilder.Entity("glubhub.Models.Fish", b =>
                 {
                     b.Property<int>("FishId")
@@ -325,6 +365,27 @@ namespace glubhub.Migrations
                     b.HasKey("GroupId");
 
                     b.ToTable("Groups");
+                });
+
+            modelBuilder.Entity("glubhub.Models.Like", b =>
+                {
+                    b.Property<int>("LikeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LikeId"));
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("LikeId");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("Likes");
                 });
 
             modelBuilder.Entity("glubhub.Models.Location", b =>
@@ -445,12 +506,49 @@ namespace glubhub.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<int>("LocationId")
+                    b.Property<int?>("FishId")
                         .HasColumnType("int");
+
+                    b.Property<int?>("GearId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GearTags")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PictureId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TechniqueId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TechniqueTags")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("TipsId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("PostId");
 
+                    b.HasIndex("FishId");
+
+                    b.HasIndex("GearId");
+
                     b.HasIndex("LocationId");
+
+                    b.HasIndex("PictureId");
+
+                    b.HasIndex("TechniqueId");
+
+                    b.HasIndex("TipsId");
 
                     b.ToTable("Posts");
                 });
@@ -512,7 +610,6 @@ namespace glubhub.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TipsId"));
 
                     b.Property<string>("Link")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -612,6 +709,38 @@ namespace glubhub.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("glubhub.Models.Comments", b =>
+                {
+                    b.HasOne("glubhub.Models.Post", "Post")
+                        .WithMany("Comments")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("glubhub.Models.Post", null)
+                        .WithOne("CommentsId")
+                        .HasForeignKey("glubhub.Models.Comments", "PostId1");
+
+                    b.HasOne("glubhub.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1");
+
+                    b.Navigation("Post");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("glubhub.Models.Like", b =>
+                {
+                    b.HasOne("glubhub.Models.Post", "Post")
+                        .WithMany("Likes")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+                });
+
             modelBuilder.Entity("glubhub.Models.Message", b =>
                 {
                     b.HasOne("glubhub.Models.ApplicationUser", "Recipient")
@@ -633,13 +762,50 @@ namespace glubhub.Migrations
 
             modelBuilder.Entity("glubhub.Models.Post", b =>
                 {
+                    b.HasOne("glubhub.Models.Fish", "Fish")
+                        .WithMany()
+                        .HasForeignKey("FishId");
+
+                    b.HasOne("glubhub.Models.Gear", "Gear")
+                        .WithMany()
+                        .HasForeignKey("GearId");
+
                     b.HasOne("glubhub.Models.Location", "Location")
                         .WithMany()
-                        .HasForeignKey("LocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("LocationId");
+
+                    b.HasOne("glubhub.Models.Picture", "Picture")
+                        .WithMany()
+                        .HasForeignKey("PictureId");
+
+                    b.HasOne("glubhub.Models.Technique", "Technique")
+                        .WithMany()
+                        .HasForeignKey("TechniqueId");
+
+                    b.HasOne("glubhub.Models.Tips", "Tips")
+                        .WithMany()
+                        .HasForeignKey("TipsId");
+
+                    b.Navigation("Fish");
+
+                    b.Navigation("Gear");
 
                     b.Navigation("Location");
+
+                    b.Navigation("Picture");
+
+                    b.Navigation("Technique");
+
+                    b.Navigation("Tips");
+                });
+
+            modelBuilder.Entity("glubhub.Models.Post", b =>
+                {
+                    b.Navigation("Comments");
+
+                    b.Navigation("CommentsId");
+
+                    b.Navigation("Likes");
                 });
 #pragma warning restore 612, 618
         }

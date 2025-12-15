@@ -22,23 +22,18 @@
         </div>
 
         <div class="row g-1 mb-1">
-            <div class="col">
-                <InputText class="form-control"
-                           @bind-Value="post.Location.City"
-                           placeholder="By" />
-            </div>
-            <div class="col">
-                <InputText class="form-control"
-                           @bind-Value="post.Location.Region"
-                           placeholder="Region" />
-            </div>
+       
+            <button type="button" class="btn btn-outline-primary" @onclick="() => showMap = !showMap">
+                Vælg lokation
+            </button>
+
+            @if (showMap)
+            {
+                <MapForm OnLocationSaved="@OnLocationPicked" />
+
+            }
         </div>
 
-        <div class="mb-2">
-            <InputTextArea class="form-control"
-                           @bind-Value="post.Content"
-                           placeholder="Fortæl os om fangsten..." />
-        </div>
 
         <div class="mb-2">
             <InputFile OnChange="OnImageSelected" />
@@ -646,5 +641,13 @@ else
         {
             statusMessage = $"Kunne ikke slette posts: {ex.Message}";
         }
+    }
+    private bool showMap = false;
+
+    private void OnLocationPicked(Location loc)
+    {
+        post.Location = loc;
+        showMap = false;
+        StateHasChanged();
     }
 }
