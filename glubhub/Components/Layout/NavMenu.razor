@@ -1,6 +1,8 @@
 ﻿@using MudBlazor;
 @implements IDisposable
 @inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 @*
 <style>
@@ -98,9 +100,13 @@
 <MudPaper Width="250px" Class="d-inline-flex py-3" Elevation="0" Square="true" Style="background-color: transparent; box-shadow: none;">
     <MudNavMenu Class="mud-width-full">
         <MudText Typo="Typo.h6" Class="px-4">Glub Hub</MudText>
+        <MudButton Variant="Variant.Text"
+                   Class="p-0"
+                   OnClick="GoToProfileOrLoginAsync">
         <MudImage ObjectFit="@ImageFit" Height="75" Width="200"
                   Src="Profile.jpg" Alt="Logo" Elevation="25"
                   Class="rounded-lg" />
+        </MudButton>
 
         <MudText Typo="Typo.body2" Class="px-4 mud-text-secondary">Dit lystfisker forum</MudText>
         <MudDivider Class="my-2" />
@@ -177,5 +183,22 @@
     {
         ImageFit = value;
     }
+
+    
+    protected async Task GoToProfileOrLoginAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/profile");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/Account/Login");
+        }
+    }
+
 
 }
