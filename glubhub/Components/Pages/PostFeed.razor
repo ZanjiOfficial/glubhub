@@ -231,7 +231,8 @@ else
                         </button>
 
                         <button class="btn btn-link p-0 small"
-                                @onclick:stopPropagation="true">
+                                @onclick:stopPropagation="true"
+                                @onclick="() => OpenShareModalAsync(p)">
                             Share
                         </button>
 
@@ -278,6 +279,70 @@ else
                 </div>
             </div>
 
+        </div>
+    </div>
+}
+
+<!-- Share modal (gruppen er fjernet — kun Feed og Message) -->
+@if (showShareModal && shareTargetPost is not null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.4);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Share post</h5>
+                    <button type="button" class="btn-close" @onclick="CloseShareModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <strong>@shareTargetPost.Comment</strong>
+                        <div class="text-muted small">@shareTargetPost.Content</div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Add comment (optional)</label>
+                        <InputTextArea class="form-control" @bind-Value="shareComment" />
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Share destination</label>
+                        <div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="destFeed" name="shareDest" checked="@((shareMode==ShareMode.Feed))" @onclick="() => shareMode = ShareMode.Feed" />
+                                <label class="form-check-label" for="destFeed">To my feed</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="destMessage" name="shareDest" checked="@((shareMode==ShareMode.Message))" @onclick="() => shareMode = ShareMode.Message" />
+                                <label class="form-check-label" for="destMessage">Send as private message</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (shareMode == ShareMode.Message)
+                    {
+                        <div class="mb-2">
+                            <label class="form-label">Recipient username</label>
+                            <InputText class="form-control" @bind-Value="recipientUserName" />
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(shareStatusMessage))
+                    {
+                        <div class="text-success small">@shareStatusMessage</div>
+                    }
+                    @if (!string.IsNullOrEmpty(shareErrorMessage))
+                    {
+                        <div class="text-danger small">@shareErrorMessage</div>
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseShareModal">Cancel</button>
+                    <button class="btn btn-primary" disabled="@isSharing" @onclick="PerformShareAsync">
+                        @(isSharing ? "Sharing..." : "Share")
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 }
@@ -344,6 +409,19 @@ else
 
     private IBrowserFile? imageFile;
     private Guid? CurrentUserId { get; set; }
+
+    // --- share-related fields (gruppen er fjernet) ---
+    [Inject] IShareService ShareServiceProp { get; set; } = default!; // property-injected alias (keeps original DI style)
+    private bool showShareModal;
+    private Post? shareTargetPost;
+    private string? shareComment;
+    private ShareMode shareMode = ShareMode.Feed;
+    private string? recipientUserName;
+    private bool isSharing;
+    private string? shareStatusMessage;
+    private string? shareErrorMessage;
+
+    enum ShareMode { Feed, Message }
 
     protected override async Task OnInitializedAsync()
     {
@@ -620,6 +698,77 @@ else
         catch (Exception ex)
         {
             statusMessage = $"Failed to delete post: {ex.Message}";
+        }
+    }
+
+    // --- share methods (gruppen er fjernet) ---
+    private async Task OpenShareModalAsync(Post p)
+    {
+        shareTargetPost = p;
+        shareComment = string.Empty;
+        shareMode = ShareMode.Feed;
+        recipientUserName = null;
+        shareStatusMessage = null;
+        shareErrorMessage = null;
+
+        showShareModal = true;
+    }
+
+    private void CloseShareModal()
+    {
+        showShareModal = false;
+        shareTargetPost = null;
+    }
+
+    private async Task PerformShareAsync()
+    {
+        if (shareTargetPost is null) return;
+        isSharing = true;
+        shareStatusMessage = null;
+        shareErrorMessage = null;
+
+        try
+        {
+            switch (shareMode)
+            {
+                case ShareMode.Feed:
+                    if (CurrentUserId is null)
+                    {
+                        shareErrorMessage = "You must be logged in.";
+                        break;
+                    }
+
+                    // Send Guid i stedet for string
+                    await ShareServiceProp.ShareToFeedAsync(shareTargetPost.PostId, CurrentUserId.Value, shareComment);
+                    shareStatusMessage = "Shared to your feed";
+                    break;
+
+                case ShareMode.Message:
+                    if (CurrentUserId is null)
+                    {
+                        shareErrorMessage = "You must be logged in.";
+                        break;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(recipientUserName))
+                    {
+                        shareErrorMessage = "Enter recipient username.";
+                        break;
+                    }
+
+                    // Send Guid i stedet for string
+                    var ok = await ShareServiceProp.SendPostAsMessageAsync(shareTargetPost.PostId, CurrentUserId.Value, recipientUserName, shareComment);
+                    shareStatusMessage = ok ? "Message sent" : "Failed to send message";
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            shareErrorMessage = ex.Message;
+        }
+        finally
+        {
+            isSharing = false;
         }
     }
 }

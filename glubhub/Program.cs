@@ -4,6 +4,7 @@ using glubhub.Data;
 using glubhub.Models;
 using glubhub.Persistent.Interfaces;
 using glubhub.Persistent.Repositories;
+using glubhub.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -57,7 +58,7 @@ namespace glubhub
 
             builder.Services.AddScoped<IdentityRedirectManager>();
 
-            
+            builder.Services.AddScoped<IShareService, ShareService>();
 
             builder.Services.AddAuthentication(options =>
                 {

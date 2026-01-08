@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using glubhub.Models;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace glubhub.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
@@ -19,6 +18,7 @@ namespace glubhub.Data
         public DbSet<glubhub.Models.Time> Times { get; set; }
         public DbSet<glubhub.Models.Tips> Tips { get; set; }
         public DbSet<glubhub.Models.Like> Likes { get; set; }
+        public IEnumerable<object> GroupMemberships { get; internal set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
