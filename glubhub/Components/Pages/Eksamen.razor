@@ -1,0 +1,17 @@
+﻿@page "/eksamen"
+@rendermode InteractiveServer 
+@inject WeatherService weatherService
+
+<h3>Eksamen</h3>
+
+
+
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        WeatherResponse w = await weatherService.GetWeatherAsync("Odense");
+        base.OnInitializedAsync();
+    }
+
+}
